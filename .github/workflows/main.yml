@@ -22,4 +22,4 @@ jobs:
       - name: Test azure login by getting details
         run: az account show
       - name: Deploy the jobs
-        run: az ml job create –file job.yaml –resource-group assignment2-b00903995 --workspace-name  
+        run: az ml job create –file job.yaml –resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
