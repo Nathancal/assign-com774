@@ -1,4 +1,4 @@
-run-name: ${{ github.actor }} workflow test
+run-name: Deploy Job 
 on:
   push:
     branches:
@@ -24,4 +24,4 @@ jobs:
       - name: Add ML Extension
         run: az extension add --name ml
       - name: Deploy the jobs
-        run: az ml job create -file job.yaml –resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+        run: az ml job create -file job.yaml -resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
