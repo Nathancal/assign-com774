@@ -1,5 +1,8 @@
 run-name: Deploy RandomForest Job 
 on:
+  pull_request:
+    types:
+      - closed  
   push:
     branches:
       - "staging"
@@ -25,3 +28,13 @@ jobs:
         run: az extension add --name ml
       - name: Deploy the jobs
         run: az ml job create --file ${{github.workspace}}/train_random_forest/job.yaml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+      - name: Check for pull request merge
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ] && \
+             [ "${{ github.event.action }}" == "closed" ] && \
+             [ "${{ github.event.pull_request.merged }}" == "true" ] && \
+             [ "${{ github.event.pull_request.base.ref }}" == "staging" ]; then
+             az ml job create --file ${{github.workspace}}/train_random_forest/job.yaml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+          else
+            echo "no merge detected in this change."
+          fi
