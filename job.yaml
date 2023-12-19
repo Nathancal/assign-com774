@@ -7,5 +7,5 @@ inputs:
     path: azureml:Har-dataset:1
 environment: azureml://registries/azureml/environments/sklearn-1.1/versions/14
 compute: practical6-compute
-experiment_name: practical6
-description: Practical6 demo
+experiment_name: experiment-1-test
+description: First test of a job being posted for the assignment.
