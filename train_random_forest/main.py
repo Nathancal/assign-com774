@@ -1,9 +1,19 @@
+import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+import mlflow
 
-df = pd.read_csv('hardata.csv')
+# Get the arugments we need to avoid fixing the dataset path in code
+parser = argparse.ArgumentParser()
+parser.add_argument("--trainingdata", type=str, required=True, help='Dataset for training')
+args = parser.parse_args()
+mlflow.autolog()
+
+
+
+df = pd.read_csv(args.trainingdata)
 
 df = df.dropna()
 
