@@ -1,0 +1,15 @@
+artifact_uri: file:///E:/Masters-Year2/IntelligenceEngineering/assignment/src/mlruns/0/fd7d6010733c4cb5a9fb69243595d74e/artifacts
+end_time: 1703075698498
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: fd7d6010733c4cb5a9fb69243595d74e
+run_name: stylish-gnu-107
+run_uuid: fd7d6010733c4cb5a9fb69243595d74e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1703075633659
+status: 3
+tags: []
+user_id: natha
