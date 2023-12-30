@@ -4,17 +4,17 @@ on:
     branches:
       - "staging"
     paths:
-      - '../../federated_learning/**'
+      - 'federated_learning/**'
   pull_request:
     branches:
       - "staging"
     paths:
-      - '../../federated_learning/**'
+      - 'federated_learning/**'
 jobs:
   testJob:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hi! I'm running because of a ${{ github.event_name }} event."
+      - run: echo "Hi! I'm running because of a ${{ github.event_name }} event. "
       - run: echo "Checking out the repository from ${{ github.repository }}."
       - name: Clone repository code
         uses: actions/checkout@v4
