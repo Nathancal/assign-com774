@@ -38,6 +38,10 @@ jobs:
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       run: |
         echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+    
+    - name: List images in ACR
+      run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+
     - name: Pull Docker Image
       run: |
         docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
