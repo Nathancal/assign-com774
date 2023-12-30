@@ -1,6 +1,11 @@
-run-name: Deploy Federated-Learning job
+run-name: Deploy Federated Learning Server Job
 on:
   push:
+    branches:
+      - "staging"
+    paths:
+      - '/federated_learning/**'
+  pull_request:
     branches:
       - "staging"
     paths:

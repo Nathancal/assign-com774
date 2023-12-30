@@ -1,0 +1,14 @@
+digest: 1f704210
+name: dataset
+profile: '{"num_rows": 75358, "num_elements": 1205728}'
+schema: '{"mlflow_colspec": [{"type": "double", "name": "AG-X"}, {"type": "double",
+  "name": "AG-Y"}, {"type": "double", "name": "AG-Z"}, {"type": "double", "name":
+  "Acc-X"}, {"type": "double", "name": "Acc-Y"}, {"type": "double", "name": "Acc-Z"},
+  {"type": "double", "name": "Gravity-X"}, {"type": "double", "name": "Gravity-Y"},
+  {"type": "double", "name": "Gravity-Z"}, {"type": "double", "name": "RR-X"}, {"type":
+  "double", "name": "RR-Y"}, {"type": "double", "name": "RR-Z"}, {"type": "double",
+  "name": "RV-X"}, {"type": "double", "name": "RV-Y"}, {"type": "double", "name":
+  "RV-Z"}, {"type": "double", "name": "cos"}]}'
+source: '{"tags": {"mlflow.user": "natha", "mlflow.source.name": "main.py", "mlflow.source.type":
+  "LOCAL"}}'
+source_type: code

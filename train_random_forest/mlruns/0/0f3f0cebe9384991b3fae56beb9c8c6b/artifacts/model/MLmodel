@@ -1,0 +1,31 @@
+artifact_path: model
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.9.0
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.3.2
+mlflow_version: 2.9.2
+model_size_bytes: 91568047
+model_uuid: 93bf8501e34e4d0b869b461f0ca4c0b0
+run_id: 0f3f0cebe9384991b3fae56beb9c8c6b
+signature:
+  inputs: '[{"type": "double", "name": "AG-X"}, {"type": "double", "name": "AG-Y"},
+    {"type": "double", "name": "AG-Z"}, {"type": "double", "name": "Acc-X"}, {"type":
+    "double", "name": "Acc-Y"}, {"type": "double", "name": "Acc-Z"}, {"type": "double",
+    "name": "Gravity-X"}, {"type": "double", "name": "Gravity-Y"}, {"type": "double",
+    "name": "Gravity-Z"}, {"type": "double", "name": "RR-X"}, {"type": "double", "name":
+    "RR-Y"}, {"type": "double", "name": "RR-Z"}, {"type": "double", "name": "RV-X"},
+    {"type": "double", "name": "RV-Y"}, {"type": "double", "name": "RV-Z"}, {"type":
+    "double", "name": "cos"}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "object", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2023-12-29 14:42:22.857013'
