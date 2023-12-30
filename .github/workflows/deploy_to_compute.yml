@@ -46,14 +46,14 @@ jobs:
 
     - name: SSH into Azure ML Compute Instance
       run: |
-        ssh -i ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }} azureuser@40.113.153.115 -p 50000
+        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 
     - name: Pull Docker Image
       run: |
-          docker pull ${{ secrets.CONTAINER_REGISTRY_URL}}/com774:server-build
+        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 docker pull ${{ secrets.CONTAINER_REGISTRY_URL}}/com774:server-build
 
     - name: Run Docker Container
       run: |
-        docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
 
     - name: Check container exists
       run: |
