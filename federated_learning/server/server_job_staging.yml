@@ -8,4 +8,4 @@ inputs:
 environment: azureml:development:4
 compute: azureml:compute-resources
 experiment_name: Fed-Learning-Server-Staging-Env
-description: This job is for deploying and running the federated learning server in the dev environment...
+description: This job is for deploying and running the federated learning server in the dev environment..
