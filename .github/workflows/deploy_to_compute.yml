@@ -45,14 +45,3 @@ jobs:
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker container ls -a
-
-    - name: Check container exists
-      run: |
-        docker container ls -a
-
-    - name: Check container exists
-      run: |
-        docker container ls -a
-    - name: Check container exists
-      run: |
-          docker container ls -a
