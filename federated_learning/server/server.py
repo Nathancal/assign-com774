@@ -9,8 +9,8 @@ from azure.identity import DefaultAzureCredential
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
-parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
-args = parser.parse_args()
+# parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
+# args = parser.parse_args()
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
