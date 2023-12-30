@@ -33,17 +33,14 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+   
+    - name: SSH into Azure ML Compute Instance
+      run: |
+        ssh -i ${{secrets.COMPUTE_INSTANCE_SSH_KEY}} azureuser@40.113.153.115 -p 50000
     - name: Pull Docker Image
       run: |
-        docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-    - name: SSH into Azure ML Compute Instance
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.COMPUTE_INSTANCE_IP }}
-        username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
-        key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
-        port: 50000
-
+          docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+          
     - name: Run Docker Container
       run: |
         docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
@@ -51,10 +48,3 @@ jobs:
     - name: Check container exists
       run: |
         docker container ls -a
-
-    - name: Check container exists
-      run: |
-        docker container ls -a
-    - name: DOCKER PS
-      run: |
-          docker ps -a
