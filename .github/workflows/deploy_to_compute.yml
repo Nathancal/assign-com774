@@ -41,7 +41,7 @@ jobs:
         username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
-        script:
+        script: |
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker container ls -a
