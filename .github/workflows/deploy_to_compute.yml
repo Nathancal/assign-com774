@@ -55,3 +55,6 @@ jobs:
     - name: Check container exists
       run: |
         docker container ls -a
+    - name: DOCKER PS
+      run: |
+          docker ps -a
