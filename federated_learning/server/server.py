@@ -9,7 +9,6 @@ import argparse
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
 parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
-parser.add_argument("--server_address", type=str, default="0.0.0.0:8080", help="Address for the Flower server")
 args = parser.parse_args()
 
 # Load and preprocess combined HAR data
@@ -44,6 +43,6 @@ if __name__ == "__main__":
         on_fit_config_fn=fit_round,
     )
     # Start the Flower server with the strategy for 10 runs
-    fl.server.start_server(server_address=args.server_address,
+    fl.server.start_server(server_address="40.113.153.115:8008",
                            strategy=strategy,
                            config=fl.server.ServerConfig(num_rounds=25))

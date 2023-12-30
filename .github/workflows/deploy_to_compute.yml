@@ -1,0 +1,39 @@
+name: Deploy to Azure ML Compute Instance
+on:
+    push:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/**'
+    pull_request:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: SSH into Azure ML Compute Instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.COMPUTE_INSTANCE_IP }}
+        username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
+        key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
+
+    - name: Pull Docker Image
+      run: |
+        docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+
+    - name: Run Docker Container
+      run: |
+        docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build

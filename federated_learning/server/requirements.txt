@@ -1,0 +1,6 @@
+flwr==1.6.0
+pandas==2.1.4
+numpy==1.26.2
+keras
+scikit-learn==1.3.2
+tensorflow
