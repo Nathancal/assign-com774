@@ -23,6 +23,19 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Log in to Azure Container Registry
+      env:
+        ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
+        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      run: |
+        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+
+    - name: List images in ACR
+      run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+    - name: Pull Docker Image
+      run: |
+        docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
       with:
@@ -31,24 +44,13 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
 
-    - name: Log in to Azure Container Registry
-      env:
-        ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
-        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-      run: |
-        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
-    
-    - name: List images in ACR
-      run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-
-    - name: Pull Docker Image
-      run: |
-        docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-
     - name: Run Docker Container
       run: |
         docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+
+    - name: Check container exists
+      run: |
+        docker container ls -a
 
     - name: Check container exists
       run: |
