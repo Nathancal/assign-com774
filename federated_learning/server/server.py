@@ -5,10 +5,26 @@ import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import DefaultAzureCredential, ManagedIdentityCredential
 
 
-ml_client = MLClient.from_config(credential=None)
+# Using ManagedIdentityCredential
+managed_identity_credential = ManagedIdentityCredential()
+
+# Using DefaultAzureCredential, which includes ManagedIdentityCredential
+default_credential = DefaultAzureCredential()
+
+# Example of using the credential to obtain a token
+resource_uri = "https://management.azure.com/subscriptions/092da66a-c312-4a87-8859-56031bb22656/resourceGroups/assignment2-b00903995/providers/assignment2-ML-workspace/Microsoft.MachineLearningServices/workspaces/Fed-Learning-Server?api-version=apiVersion"
+
+# Using ManagedIdentityCredential
+token_managed_identity = managed_identity_credential.get_token(resource_uri).token
+
+# Using DefaultAzureCredential
+token_default_credential = default_credential.get_token(resource_uri).token
+
+
+ml_client = MLClient.from_config(credential=token_default_credential)
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
