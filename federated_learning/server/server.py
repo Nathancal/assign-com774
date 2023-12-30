@@ -1,7 +1,7 @@
 # server.py
 import flwr as fl
 from typing import Dict
-from utils import utils 
+import utils 
 import pandas as pd
 import argparse
 
