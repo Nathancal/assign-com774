@@ -1,0 +1,11 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+code: .
+command: python main.py --trainingdata ${{ inputs.training_data }}
+inputs:
+  training_data:
+    type: uri_file
+    path: azureml:Har-dataset:1
+environment: azureml://registries/azureml/environments/sklearn-1.1/versions/14
+compute: azureml:compute-resources
+experiment_name: experiment-1-test
+description: First test of a job being posted for the assignment.
