@@ -29,6 +29,7 @@ jobs:
         host: ${{ secrets.COMPUTE_INSTANCE_IP }}
         username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
+        port: 50000
 
     - name: Pull Docker Image
       run: |
