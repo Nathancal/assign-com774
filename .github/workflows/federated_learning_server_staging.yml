@@ -5,6 +5,11 @@ on:
       - "staging"
     paths:
       - '/federated_learning/**'
+  pull_request:
+    branches:
+      - "staging"
+    paths:
+      - '/federated_learning/**'
 jobs:
   testJob:
     runs-on: ubuntu-latest
