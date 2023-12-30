@@ -33,28 +33,26 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-    
-    - name: Set up SSH key
-      run: |
-        echo "$SSH_PRIVATE_KEY" > private_key.pem
-        chmod 600 private_key.pem
-        eval "$(ssh-agent -s)"
-        ssh-add private_key.pem
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
-
 
     - name: SSH into Azure ML Compute Instance
-      run: |
-        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 
-    - name: Pull Docker Image
-      run: |
-        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 docker pull ${{ secrets.CONTAINER_REGISTRY_URL}}/com774:server-build
-
-    - name: Run Docker Container
-      run: |
-        ssh -i private_key.pem azureuser@40.113.153.115 -p 50000 docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.COMPUTE_INSTANCE_IP }}
+        username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
+        key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
+        port: 50000
+        script:
+            docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+            docker container ls -a
 
     - name: Check container exists
       run: |
         docker container ls -a
+
+    - name: Check container exists
+      run: |
+        docker container ls -a
+    - name: Check container exists
+      run: |
+          docker container ls -a
