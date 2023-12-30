@@ -49,3 +49,7 @@ jobs:
     - name: Run Docker Container
       run: |
         docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+
+    - name: Check container exists
+      run: |
+        docker container ls -a

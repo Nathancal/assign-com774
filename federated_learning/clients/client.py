@@ -19,7 +19,7 @@ def client(data):
     utils.set_initial_lstm_params(model)
 
 
-    fl.client.start_numpy_client(server_address="127.0.0.1:8080", client=HARClient())
+    fl.client.start_numpy_client(server_address="40.113.153.115:8008", client=HARClient())
 
 
 

@@ -1,45 +1,38 @@
-from client import client
+# run_client.py
 import argparse
-from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential
-import pandas as pd
-from azureml.core.image import ContainerImage
-from azureml.core import Workspace, Environment
+from azureml.core import Workspace, Run, Environment
+from azureml.core.model import InferenceConfig, Model
+from azureml.core.webservice import AciWebservice
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+parser = argparse.ArgumentParser()
+parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
+args = parser.parse_args()
+
+subject_num = args.subject_num
 
 # Load your Azure ML workspace
 ws = Workspace.from_config()
 
-# Get the arugments we need to avoid fixing the dataset path in code
-parser = argparse.ArgumentParser()
-parser.add_argument("--totalsubjects", type=int, required=True, help='Total number of subjects in model.')
-args = parser.parse_args()
-
 # Get the latest version of the Azure ML environment
 environment = Environment.get(workspace=ws, name="development")
 
+# Create an InferenceConfig
+inference_config = InferenceConfig(entry_script="client.py",
+                                   environment=environment)
 
-for subject_num in range(args.totalsubjects):
-
+# Deploy multiple clients
+for subject_num in range(args.total_subjects):
     # Specify the name of the dataset
-    dataset_name = "subject"+ str(subject_num + 1)
+    dataset_name = f"subject{subject_num + 1}"
 
-    data_asset = ml_client.data._get_latest_version(dataset_name)
-
-    individual_df = pd.read_csv(data_asset.path)
-
-      # Build and register Docker image for client
-    client_image_config = ContainerImage.image_configuration(execution_script="client.py",
-                                                             runtime="python",
-                                                             environment=environment,
-                                                             dependencies=["../utils/utils.py"],
-                                                             description=f"Federated Learning Client {subject_num + 1}")
+    # Deploy the client as an Azure AI job
+    service_name = f"fl-client-service-subject-{subject_num + 1}"
     
-    client_image = ContainerImage.create(name=f"fl-client-image-{subject_num + 1}",
-                                         models=[],
-                                         image_config=client_image_config,
-                                         workspace=ws)
+    deployed_service = Model.deploy(workspace=ws,
+                                    name=service_name,
+                                    models=[],
+                                    inference_config=inference_config,
+                                    deployment_config=AciWebservice.deploy_configuration(),
+                                    overwrite=True)
 
-    # Deploy the client image as a web service
-    client_service = client_image.deploy(workspace=ws, name=f"fl-client-service-{subject_num + 1}")
+    deployed_service.wait_for_deployment(show_output=True)
