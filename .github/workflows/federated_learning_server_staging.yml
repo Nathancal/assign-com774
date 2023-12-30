@@ -4,12 +4,12 @@ on:
     branches:
       - "staging"
     paths:
-      - '/federated_learning/**'
+      - '../../federated_learning/**'
   pull_request:
     branches:
       - "staging"
     paths:
-      - '/federated_learning/**'
+      - '../../federated_learning/**'
 jobs:
   testJob:
     runs-on: ubuntu-latest

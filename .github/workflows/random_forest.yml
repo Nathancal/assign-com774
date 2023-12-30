@@ -4,7 +4,7 @@ on:
     branches:
       - "staging"
     paths:
-      - '/train_random_forest/**'
+      - '../../train_random_forest/**'
 jobs:
   testJob:
     runs-on: ubuntu-latest
