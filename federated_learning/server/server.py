@@ -4,15 +4,21 @@ from typing import Dict
 import utils 
 import pandas as pd
 import argparse
-
+from azure.ai.ml import MLClient
+from azure.identity import DefaultAzureCredential
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
 parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
 args = parser.parse_args()
 
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+
+
+data_asset = ml_client.data._get_latest_version(args.trainingdata)
+
 # Load and preprocess combined HAR data
-X, Y = utils.load_har_data(args.trainingdata)
+X, Y = utils.load_har_data(data_asset)
 
 print(X)
 print(Y)
