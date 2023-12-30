@@ -43,5 +43,5 @@ jobs:
         port: 50000
         script: |
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
             docker container ls -a
