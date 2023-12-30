@@ -1,4 +1,4 @@
-run-name: Deploy Random-forest-job
+run-name: Deploy Federated Learning Server Job
 on:
   push:
     branches:
