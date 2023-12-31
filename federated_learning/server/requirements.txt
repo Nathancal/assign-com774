@@ -10,3 +10,5 @@ fsspec
 azureml-fsspec
 azureml-mlflow
 mltable
+azureml==0.2.7
+azureml-core
