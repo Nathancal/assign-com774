@@ -42,11 +42,20 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-            # Setup Azure CLI
+          # Setup Azure CLI
+          - name: Login to Azure
             uses: azure/login@v1
             with:
               creds: ${{ secrets.AZURE_CREDENTIALS }}
-            
-            docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
-            docker container ls -a
+          
+          # Pull Docker image
+          - name: Pull Docker image
+            run: docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+          
+          # Run Docker container
+          - name: Run Docker container
+            run: docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
+          
+          # List Docker containers
+          - name: List Docker containers
+            run: docker container ls -a
