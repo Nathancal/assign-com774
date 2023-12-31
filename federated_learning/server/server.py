@@ -5,23 +5,26 @@ import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import ClientSecretCredential
+from azureml.core import Workspace, Dataset
 
+# Replace with your actual values
+tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
+client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
+client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
-# # Replace with your actual values
-# tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
-# client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
-# client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
-# subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
+# Create a credentials object using the service principal details
+credentials = ClientSecretCredential(
+    tenant_id=tenant_id,
+    client_id=client_id,
+    client_secret=client_secret
+)
 
-# # Create a credentials object using the service principal details
-# credentials = ClientSecretCredential(
-#     tenant_id=tenant_id,
-#     client_id=client_id,
-#     client_secret=client_secret
-# )
+ml_client = MLClient.from_config(credential=credentials)
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+# Load the Azure ML workspace
+ws = Workspace.from_config()
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -30,11 +33,8 @@ args = parser.parse_args()
 
 data_name = args.trainingdata
 
-data_asset = ml_client.data._get_latest_version(data_name) 
-
-print(data_asset)
 # Load and preprocess combined HAR data
-X, Y = utils.load_har_data(data_asset.path)
+X, Y = utils.load_har_data(data_name)
 
 print(X)
 print(Y)
