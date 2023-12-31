@@ -30,8 +30,9 @@ args = parser.parse_args()
 
 data_name = args.trainingdata
 
-data_asset = ml_client.data._get_latest_version(data_name)
+data_asset = ml_client.data._get_latest_version(data_name) 
 
+print(data_asset)
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
 

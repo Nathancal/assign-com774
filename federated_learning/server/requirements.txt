@@ -7,3 +7,4 @@ tensorflow
 azure-ai-ml
 azure-identity
 fsspec
+azureml-fsspec
