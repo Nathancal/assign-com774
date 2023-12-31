@@ -5,7 +5,8 @@ import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
-from azure.identity import ClientSecretCredential
+from azure.identity import DefaultAzureCredential
+from azureml.core import Workspace
 
 
 # Replace with your actual values
@@ -14,14 +15,17 @@ client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
-# Create a credentials object using the service principal details
-credentials = ClientSecretCredential(
-    tenant_id=tenant_id,
-    client_id=client_id,
-    client_secret=client_secret
-)
+# # Create a credentials object using the service principal details
+# credentials = ClientSecretCredential(
+#     tenant_id=tenant_id,
+#     client_id=client_id,
+#     client_secret=client_secret
+# )
 
-ml_client = MLClient.from_config(credential=credentials)
+
+
+# Load Azure Machine Learning workspace from configuration file
+ws = Workspace.from_config(path='./config.json')
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -30,8 +34,10 @@ args = parser.parse_args()
 
 data_name = args.trainingdata
 
-data_asset = ml_client.data._get_latest_version(data_name)
-df = pd.read_csv(data_asset.path)   
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+data_asset = ml_client.data.get("combined_data_sub1-9", version="1")
+
+df = pd.read_csv(data_asset.path)
 
 print(df)
 # Load and preprocess combined HAR data
