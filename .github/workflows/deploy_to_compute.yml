@@ -33,7 +33,7 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-
+    
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
       with:
