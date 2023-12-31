@@ -5,7 +5,6 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
-from azureml.core import Workspace, Dataset
 
 
 def load_har_data(file):
