@@ -42,7 +42,7 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-            az login --identity
+            az login --identity --allow-no-subscriptions
             az account show
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
