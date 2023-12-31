@@ -42,7 +42,7 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-            az login --username Callaghan-N7@ulster.ac.uk --password 50041971950103
+            az login --service-principal --tenant 6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8 --username 1bee10b2-17dd-4a50-b8aa-488d27bdd5a1 --password MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
             docker container ls -a
