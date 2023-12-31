@@ -5,9 +5,19 @@ import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
+from azureml.core import Workspace
 from azure.identity import DefaultAzureCredential
+from azure.common.credentials import ServicePrincipalCredentials
+from azure.identity import DefaultAzureCredential
+import os
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+# Set the AZURE_TENANT_ID environment variable
+os.environ["AZURE_TENANT_ID"] = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
+
+# Use DefaultAzureCredential to authenticate
+credentials = DefaultAzureCredential()
+
+ml_client = MLClient.from_config(credential=credentials)
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -19,7 +29,7 @@ data_name = args.trainingdata
 data_asset = ml_client.data._get_latest_version(data_name)
 
 # Load and preprocess combined HAR data
-X, Y = utils.load_har_data(data_asset)
+X, Y = utils.load_har_data(data_asset.path)
 
 print(X)
 print(Y)
