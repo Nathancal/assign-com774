@@ -33,7 +33,7 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-    
+
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
       with:
@@ -42,20 +42,7 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-          # Setup Azure CLI
-          - name: Login to Azure
-            uses: azure/login@v1
-            with:
-              creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-          # Pull Docker image
-          - name: Pull Docker image
-            run: docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-          
-          # Run Docker container
-          - name: Run Docker container
-            run: docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
-          
-          # List Docker containers
-          - name: List Docker containers
-            run: docker container ls -a
+            az login --service-principal --tenant "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .tenantId)" --username "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .clientId)" --password "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .clientSecret)"
+            docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
+            docker container ls -a
