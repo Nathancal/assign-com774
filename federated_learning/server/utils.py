@@ -10,13 +10,8 @@ from azureml.core import Workspace, Dataset
 
 def load_har_data(file):
 
-    # Load the Azure ML workspace
-    ws = Workspace.from_config()
-
-    # Load the dataset using the 'azureml://' path
-    dataset = Dataset.get_by_name(workspace=ws, name=file)
-    df = dataset.to_pandas_dataframe()
-
+    
+    df = pd.read_csv(file)   
     df = df.dropna()
 
     # Extract features and labels

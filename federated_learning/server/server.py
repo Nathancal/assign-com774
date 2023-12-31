@@ -7,6 +7,8 @@ import argparse
 from azure.ai.ml import MLClient
 from azure.identity import ClientSecretCredential
 from azureml.core import Workspace, Dataset
+import azureml.mlflow
+
 
 # Replace with your actual values
 tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
@@ -23,9 +25,6 @@ credentials = ClientSecretCredential(
 
 ml_client = MLClient.from_config(credential=credentials)
 
-# Load the Azure ML workspace
-ws = Workspace.from_config()
-
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
 parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
@@ -33,8 +32,12 @@ args = parser.parse_args()
 
 data_name = args.trainingdata
 
+data_asset = ml_client.data._get_latest_version(data_name)
+df = pd.read_csv(data_asset.path)   
+
+print(df)
 # Load and preprocess combined HAR data
-X, Y = utils.load_har_data(data_name)
+X, Y = utils.load_har_data(data_asset.path)
 
 print(X)
 print(Y)

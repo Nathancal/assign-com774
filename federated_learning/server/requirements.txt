@@ -8,3 +8,4 @@ azure-ai-ml
 azure-identity
 fsspec
 azureml-fsspec
+azureml-mlflow
