@@ -42,8 +42,7 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-            sudo apt-get update && sudo apt-get install -y jq
-            az login --service-principal --tenant "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .tenantId)" --username "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .clientId)" --password "$(echo "${{ secrets.AZURE_CREDENTIALS }}" | jq -r .clientSecret)"
+            az login --service-principal --tenant ${{secrets.TENANTID}} --username ${{secrets.CLIENT_ID}} --password ${{secrets.CLIENTSECRET}}
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
             docker container ls -a
