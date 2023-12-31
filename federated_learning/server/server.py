@@ -6,15 +6,8 @@ import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
-import os
 
-# Set the AZURE_TENANT_ID environment variable
-os.environ["AZURE_TENANT_ID"] = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
-
-# Use DefaultAzureCredential to authenticate
-credentials = DefaultAzureCredential()
-
-ml_client = MLClient.from_config(credential=credentials)
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
