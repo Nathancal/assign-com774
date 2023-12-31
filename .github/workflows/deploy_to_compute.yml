@@ -43,7 +43,7 @@ jobs:
         port: 50000
         script: |
             az login --service-principal --tenant ${{secrets.TENANTID}} --username ${{secrets.CLIENT_ID}} --password ${{secrets.CLIENTSECRET}}
-            az account show --query tenantId --output tsv
+            echo "Tenant ID: $(az account show --query tenantId --output tsv)"
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
             docker container ls -a
