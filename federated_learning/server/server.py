@@ -5,9 +5,6 @@ import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
-from azureml.core import Workspace
-from azure.identity import DefaultAzureCredential
-from azure.common.credentials import ServicePrincipalCredentials
 from azure.identity import DefaultAzureCredential
 import os
 
