@@ -22,7 +22,7 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 credentials = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
 
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+ml_client = MLClient.from_config(credential=DefaultAzureCredential(credentials=credentials))
 
 # Load your Azure ML workspace
 ws = Workspace.from_config()
