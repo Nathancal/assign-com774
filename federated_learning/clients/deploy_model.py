@@ -1,6 +1,8 @@
 
 import logging
-from azureml.core import Workspace, Model, InferenceConfig, AciWebservice
+from azureml.core import Workspace, Model, Environment, ScriptRunConfig
+from azureml.core.webservice import AciWebservice
+from azureml.core.model import InferenceConfig
 import mlflow
 import datetime
 
@@ -10,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 # Connect to your Azure ML workspace
 ws = Workspace.from_config()
+
+environment = Environment.get(workspace=ws, name="testing")
 
 
 def deploy_azure_model(model_name, model_path, accuracy_threshold=0.8):
@@ -24,11 +28,22 @@ def deploy_azure_model(model_name, model_path, accuracy_threshold=0.8):
         # Deploy only if accuracy is greater than the threshold
         if accuracy > accuracy_threshold:
             # Define inference configuration
-            inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file="myenv.yml")
+            inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file=environment)
 
             # Deploy the model as a web service
             aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
             service_name = f"{model_name.lower()}-{formatted_datetime}-service"
+
+            # Pass a parameter to the entry script using the arguments parameter
+            inference_config.arguments = ["--modelname", model_name]
+
+            # Create a ScriptRunConfig
+            script_run_config = ScriptRunConfig(source_directory=".",
+                                               script="score.py",
+                                               arguments=inference_config.arguments,  # Pass arguments here
+                                               compute_target="compute-instance",  # Specify your compute target
+                                               environment=inference_config.environment)
+
             service = Model.deploy(workspace=ws,
                                    name=service_name,
                                    models=[model],

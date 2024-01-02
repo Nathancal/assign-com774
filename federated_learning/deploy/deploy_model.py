@@ -1,6 +1,8 @@
 
 import logging
-from azureml.core import Workspace, Model, InferenceConfig, AciWebservice
+from azureml.core import Workspace, Model, Environment
+from azureml.core.webservice import AciWebservice
+from azureml.core.model import InferenceConfig
 import mlflow
 import datetime
 
@@ -10,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 # Connect to your Azure ML workspace
 ws = Workspace.from_config()
+
+environment = Environment.get(workspace=ws, name="testing")
 
 
 def deploy_azure_model(model_name, model_path, accuracy_threshold=0.8):
@@ -24,7 +28,7 @@ def deploy_azure_model(model_name, model_path, accuracy_threshold=0.8):
         # Deploy only if accuracy is greater than the threshold
         if accuracy > accuracy_threshold:
             # Define inference configuration
-            inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file="myenv.yml")
+            inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file=environment)
 
             # Deploy the model as a web service
             aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
