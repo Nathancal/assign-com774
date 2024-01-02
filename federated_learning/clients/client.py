@@ -43,3 +43,6 @@ def client():
             return loss, len(X_test), {"accuracy": accuracy}
 
     fl.client.start_numpy_client(server_address="40.113.153.115:8008", client=HARClient())
+
+if __name__ == "__main__":
+    client()
