@@ -47,6 +47,11 @@ for subject_num in range(args.total_subjects):
     environment_variables={"data": data_asset.path}
 
     environment.environment_variables = environment_variables
+
+    # Set Docker build context to None to avoid conflict
+    environment.docker.base_image = None
+
+
     inference_config.environment = environment
      # Pass dataset path as an environment variable
     deployment_config = AciWebservice.deploy_configuration()
