@@ -18,6 +18,9 @@ def client():
 
     # Create an LSTM model
     model = utils.create_lstm_model()
+    
+    if data is None:
+        raise ValueError("Invalid file path: 'data' environment variable is not set.")
 
     # Load client data
     X, Y = utils.load_har_data(data)
