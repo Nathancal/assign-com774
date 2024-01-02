@@ -23,9 +23,10 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 # )
 
 
+access_token = ""
 
 # Load Azure Machine Learning workspace from configuration file
-ws = Workspace.from_config(path='./config.json')
+ws = Workspace.from_config(path='./config.json', auth=("Bearer", access_token))
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()

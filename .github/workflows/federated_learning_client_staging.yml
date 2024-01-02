@@ -9,7 +9,7 @@ on:
     branches:
       - "staging"
     paths:
-      - 'federated_learning/clients**'
+      - 'federated_learning/clients/**'
 jobs:
   testJob:
     runs-on: ubuntu-latest
