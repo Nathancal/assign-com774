@@ -81,14 +81,10 @@ def client():
                 logger.info(f"Evaluation completed. Loss: {loss}, Accuracy: {accuracy}")
                 return loss, len(X_test), {"accuracy": accuracy}
 
-        # ... (rest of the code)
-
     except Exception as e:
         logger.error(f"Error in client script: {str(e)}")
         # Log exception to MLflow
         mlflow.log_param("error_message", str(e))
-
+        
 if __name__ == "__main__":
     client()
-    # End MLflow run
-    mlflow.end_run()
