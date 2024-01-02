@@ -90,6 +90,6 @@ def submit_job(subject_num):
 # Submit jobs in parallel
 with ProcessPoolExecutor() as executor:
     executor.map(submit_job, range(args.total_subjects))
+    # End MLflow run
+    mlflow.end_run()
     
-# End MLflow run
-mlflow.end_run()
