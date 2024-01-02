@@ -15,18 +15,8 @@ client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
-# # Create a credentials object using the service principal details
-# credentials = ClientSecretCredential(
-#     tenant_id=tenant_id,
-#     client_id=client_id,
-#     client_secret=client_secret
-# )
-
-
-access_token = ""
-
 # Load Azure Machine Learning workspace from configuration file
-ws = Workspace.from_config(path='./config.json', auth=("Bearer", access_token))
+ws = Workspace.from_config(path='./config.json')
 
 # Get the arugments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -73,6 +63,6 @@ if __name__ == "__main__":
         on_fit_config_fn=fit_round,
     )
     # Start the Flower server with the strategy for 10 runs
-    fl.server.start_server(server_address="40.113.153.115:8008",
+    fl.server.start_server(server_address="127.0.0.1:8008",
                            strategy=strategy,
                            config=fl.server.ServerConfig(num_rounds=25))

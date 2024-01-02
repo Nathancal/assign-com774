@@ -3,6 +3,7 @@ import argparse
 from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
+from concurrent.futures import ThreadPoolExecutor
 
 
 parser = argparse.ArgumentParser()
@@ -28,15 +29,15 @@ ws = Workspace.from_config()
 # Get the latest version of the Azure ML environment
 environment = Environment.get(workspace=ws, name="development")
 
-# Submit multiple client jobs
-for subject_num in range(args.total_subjects):
+# Function to submit a job
+def submit_job(subject_num):
     # Specify the name of the dataset
     dataset_name = f"subject{subject_num + 1}"
 
     data_asset = ml_client.data._get_latest_version(dataset_name)
 
     # Create a unique experiment name with timestamp
-    experiment_name = f"client_experiment_subject{subject_num + 1}"
+    experiment_name = f"client_experiment_{subject_num + 1}"
 
     # Check if the experiment already exists
     if experiment_name not in ws.experiments:
@@ -49,10 +50,14 @@ for subject_num in range(args.total_subjects):
     # Define a ScriptRunConfig
     script_config = ScriptRunConfig(source_directory=".",
                                     script="client.py",
-                                    compute_target="compute-resources",  # Specify your compute target
+                                    compute_target="your_compute_name",  # Specify your compute target
                                     environment=environment,
                                     arguments=["--data", data_asset.path])
 
     # Submit the job
     run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-    run.wait_for_completion(show_output=True)
+    print(f"Job for subject {subject_num + 1} submitted.")
+
+# Submit jobs in parallel
+with ThreadPoolExecutor() as executor:
+    executor.map(submit_job, range(args.total_subjects))
