@@ -37,10 +37,7 @@ environment = Environment.get(workspace=ws, name="development")
 # Function to submit a job
 def submit_job(subject_num):
     try:
-        # Generate a unique run_id for each client using subject number and timestamp
-        run_id = f"client_run_{subject_num + 1}_{int(time.time())}"
-
-
+        
         # Specify the name of the dataset
         dataset_name = f"subject{subject_num + 1}"
 
@@ -66,18 +63,18 @@ def submit_job(subject_num):
                                         environment=environment,
                                         arguments=["--data", data_asset.path])
         
-        mlflow.start_run(run_id=run_id)
-        # Log parameters to MLflow
-        mlflow.log_param("subject_num", subject_num + 1)
-        mlflow.log_param("experiment_name", experiment_name)
+        with mlflow.start_run():
+            # Log parameters to MLflow
+            mlflow.log_param("subject_num", subject_num + 1)
+            mlflow.log_param("experiment_name", experiment_name)
 
-        # Submit the job
-        run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-        logger.info(f"Job for subject {subject_num + 1} submitted.")
-        
-        # Log run ID and experiment ID to MLflow
-        mlflow.log_param("run_id", run.id)
-        mlflow.log_param("experiment_id", experiment.id)
+            # Submit the job
+            run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+            logger.info(f"Job for subject {subject_num + 1} submitted.")
+            
+            # Log run ID and experiment ID to MLflow
+            mlflow.log_param("run_id", run.id)
+            mlflow.log_param("experiment_id", experiment.id)
 
     except Exception as e:
         logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
