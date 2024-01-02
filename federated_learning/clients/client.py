@@ -3,8 +3,12 @@ import flwr as fl
 import numpy as np
 import utils
 from sklearn.model_selection import train_test_split
+import os
 
-def client(data):
+def client():
+
+    data = os.environ.get('data')
+
     # Create an LSTM model
     model = utils.create_lstm_model()
 
