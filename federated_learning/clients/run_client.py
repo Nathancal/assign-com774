@@ -3,8 +3,13 @@ import argparse
 from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
+import logging
 
+
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
@@ -20,7 +25,6 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
 credentials = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
 
-
 ml_client = MLClient.from_config(credential=DefaultAzureCredential(credentials=credentials))
 
 # Load your Azure ML workspace
@@ -31,33 +35,39 @@ environment = Environment.get(workspace=ws, name="development")
 
 # Function to submit a job
 def submit_job(subject_num):
-    # Specify the name of the dataset
-    dataset_name = f"subject{subject_num + 1}"
+    try:
+        # Specify the name of the dataset
+        dataset_name = f"subject{subject_num + 1}"
 
-    data_asset = ml_client.data._get_latest_version(dataset_name)
+        data_asset = ml_client.data._get_latest_version(dataset_name)
 
-    # Create a unique experiment name with timestamp
-    experiment_name = f"client_experiment_{subject_num + 1}"
+        # Create a unique experiment name with timestamp
+        experiment_name = f"client_experiment_{subject_num + 1}"
 
-    # Check if the experiment already exists
-    if experiment_name not in ws.experiments:
-        # If not, create a new experiment
-        experiment = Experiment(workspace=ws, name=experiment_name)
-    else:
-        # If it exists, get the existing experiment
-        experiment = ws.experiments[experiment_name]
+        # Check if the experiment already exists
+        if experiment_name not in ws.experiments:
+            # If not, create a new experiment
+            experiment = Experiment(workspace=ws, name=experiment_name)
+            logger.info(f"Experiment {experiment_name} does not exist, will be created now.")
+            
+        else:
+            # If it exists, get the existing experiment
+            experiment = ws.experiments[experiment_name]
+            logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
 
-    # Define a ScriptRunConfig
-    script_config = ScriptRunConfig(source_directory=".",
-                                    script="client.py",
-                                    compute_target="your_compute_name",  # Specify your compute target
-                                    environment=environment,
-                                    arguments=["--data", data_asset.path])
+        # Define a ScriptRunConfig
+        script_config = ScriptRunConfig(source_directory=".",
+                                        script="client.py",
+                                        compute_target="your_compute_name",  # Specify your compute target
+                                        environment=environment,
+                                        arguments=["--data", data_asset.path])
 
-    # Submit the job
-    run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-    print(f"Job for subject {subject_num + 1} submitted.")
+        # Submit the job
+        run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+        logger.info(f"Job for subject {subject_num + 1} submitted.")
+    except Exception as e:
+        logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
 
 # Submit jobs in parallel
-with ThreadPoolExecutor() as executor:
+with ProcessPoolExecutor() as executor:
     executor.map(submit_job, range(args.total_subjects))
