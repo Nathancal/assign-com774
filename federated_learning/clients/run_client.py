@@ -49,7 +49,7 @@ def submit_job(subject_num):
             # If not, create a new experiment
             experiment = Experiment(workspace=ws, name=experiment_name)
             logger.info(f"Experiment {experiment_name} does not exist, will be created now.")
-            
+
         else:
             # If it exists, get the existing experiment
             experiment = ws.experiments[experiment_name]
@@ -58,7 +58,7 @@ def submit_job(subject_num):
         # Define a ScriptRunConfig
         script_config = ScriptRunConfig(source_directory=".",
                                         script="client.py",
-                                        compute_target="your_compute_name",  # Specify your compute target
+                                        compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
                                         arguments=["--data", data_asset.path])
 
