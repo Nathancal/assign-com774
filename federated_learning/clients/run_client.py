@@ -43,9 +43,13 @@ for subject_num in range(args.total_subjects):
 
     # Deploy the client as an Azure AI job
     service_name = f"fl-client-service-subject-{subject_num + 1}"
-    
+
+    environment_variables={"data": data_asset.path}
+
+    environment.environment_variables = environment_variables
+    inference_config.environment = environment
      # Pass dataset path as an environment variable
-    deployment_config = AciWebservice.deploy_configuration(environment_variables={"data": data_asset.path})
+    deployment_config = AciWebservice.deploy_configuration()
 
     deployed_service = Model.deploy(workspace=ws,
                                     name=service_name,
