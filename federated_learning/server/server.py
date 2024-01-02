@@ -7,6 +7,7 @@ from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
 from azureml.core import Workspace
 import mlflow
+from keras.models import save_model
 
 # Replace with your actual values
 tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
@@ -72,6 +73,22 @@ strategy = fl.server.strategy.FedAvg(
 fl.server.start_server(server_address="0.0.0.0:8008",
                        strategy=strategy,
                        config=fl.server.ServerConfig(num_rounds=25))
+
+
+# Save the federated model after training
+save_model(model, "federated_model.h5")
+# Deploy the model as a web service
+        service_name = f"{model_name.lower()}-service"
+        service = Model.deploy(workspace=ws,
+                                   name=service_name,
+                                   models=[model],
+                                   inference_config=inference_config,
+                                   deployment_config=aciconfig)
+        service.wait_for_deployment(show_output=True)
+# After saving the federated model
+mlflow.log_artifact("federated_model.h5")
+model_path = mlflow.get_artifact_uri("federated_model.h5")
+mlflow.register_model(model_path, "federated_model")
 
 # End MLflow run
 mlflow.end_run()

@@ -6,10 +6,18 @@ import os
 import logging
 import argparse
 import mlflow
+from keras.models import save_model
+from deploy_model import deploy_azure_model
+import datetime
+from azureml.core import  Model, Workspace
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Load your Azure ML workspace
+ws = Workspace.from_config()
+
 
 def client():
     try:
@@ -44,6 +52,26 @@ def client():
             def fit(self, parameters, config):
                 utils.set_lstm_model_params(model, parameters)
                 model.fit(X_train, Y_train, epochs=10, verbose=0)
+
+                # Get the current date and time
+                current_datetime = datetime.now()
+
+                # Format as a string
+                formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
+                                
+                # Save the model after training
+                save_model(model, f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
+                # After saving the individual models
+                mlflow.log_artifact(f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
+                model_path = mlflow.get_artifact_uri(f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
+                mlflow.register_model(model_path, f"client_model_subject{config['subject_id']}_{formatted_datetime}")
+
+                model = Model.register(workspace=ws, model_path=model_path, model_name=f"client_model_subject{config['subject_id']}_{formatted_datetime}")
+
+                # Deploy the model to Azure
+                deploy_azure_model(f"client_model_subject{config['subject_id']}_{formatted_datetime}", model_path)
+
+
                 logger.info(f"Training finished for round {config['server_round']}")
                 return utils.get_lstm_model_parameters(model), len(X_train), {}
 
@@ -53,10 +81,7 @@ def client():
                 logger.info(f"Evaluation completed. Loss: {loss}, Accuracy: {accuracy}")
                 return loss, len(X_test), {"accuracy": accuracy}
 
-        # Log parameters to MLflow
-        mlflow.log_param("data_path", args.data)
-
-        fl.client.start_numpy_client(server_address="40.113.153.115:8008", client=HARClient())
+        # ... (rest of the code)
 
     except Exception as e:
         logger.error(f"Error in client script: {str(e)}")
