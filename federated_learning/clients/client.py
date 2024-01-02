@@ -89,8 +89,6 @@ def client():
         mlflow.log_param("error_message", str(e))
 
 if __name__ == "__main__":
-    # Start MLflow run
-    mlflow.start_run()
     client()
     # End MLflow run
     mlflow.end_run()

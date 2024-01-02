@@ -77,14 +77,15 @@ fl.server.start_server(server_address="0.0.0.0:8008",
 
 # Save the federated model after training
 save_model(model, "federated_model.h5")
+
 # Deploy the model as a web service
-        service_name = f"{model_name.lower()}-service"
-        service = Model.deploy(workspace=ws,
+service_name = f"{model_name.lower()}-service"
+service = Model.deploy(workspace=ws,
                                    name=service_name,
                                    models=[model],
                                    inference_config=inference_config,
                                    deployment_config=aciconfig)
-        service.wait_for_deployment(show_output=True)
+service.wait_for_deployment(show_output=True)
 # After saving the federated model
 mlflow.log_artifact("federated_model.h5")
 model_path = mlflow.get_artifact_uri("federated_model.h5")

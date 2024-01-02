@@ -5,6 +5,8 @@ from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
 import mlflow
+import time
+
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +40,10 @@ environment = Environment.get(workspace=ws, name="development")
 # Function to submit a job
 def submit_job(subject_num):
     try:
+        # Generate a unique run_id for each client using subject number and timestamp
+        run_id = f"client_run_{subject_num + 1}_{int(time.time())}"
+
+
         # Specify the name of the dataset
         dataset_name = f"subject{subject_num + 1}"
 
@@ -62,7 +68,8 @@ def submit_job(subject_num):
                                         compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
                                         arguments=["--data", data_asset.path])
-
+        
+        mlflow.start_run(run_id=run_id)
         # Log parameters to MLflow
         mlflow.log_param("subject_num", subject_num + 1)
         mlflow.log_param("experiment_name", experiment_name)
@@ -84,5 +91,3 @@ def submit_job(subject_num):
 with ProcessPoolExecutor() as executor:
     executor.map(submit_job, range(args.total_subjects))
 
-# End MLflow run
-mlflow.end_run()
