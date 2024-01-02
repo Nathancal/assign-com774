@@ -1,8 +1,6 @@
 # run_client.py
 import argparse
-from azureml.core import Workspace, Run, Environment
-from azureml.core.model import InferenceConfig, Model
-from azureml.core.webservice import AciWebservice
+from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
 
@@ -30,37 +28,31 @@ ws = Workspace.from_config()
 # Get the latest version of the Azure ML environment
 environment = Environment.get(workspace=ws, name="development")
 
-# Create an InferenceConfig
-inference_config = InferenceConfig(entry_script="client.py",
-                                   environment=environment)
-
-# Deploy multiple clients
+# Submit multiple client jobs
 for subject_num in range(args.total_subjects):
     # Specify the name of the dataset
     dataset_name = f"subject{subject_num + 1}"
 
     data_asset = ml_client.data._get_latest_version(dataset_name)
 
-    # Deploy the client as an Azure AI job
-    service_name = f"fl-client-service-subject-{subject_num + 1}"
+    # Create a unique experiment name with timestamp
+    experiment_name = f"client_experiment_subject{subject_num + 1}"
 
-    environment_variables={"data": data_asset.path}
+    # Check if the experiment already exists
+    if experiment_name not in ws.experiments:
+        # If not, create a new experiment
+        experiment = Experiment(workspace=ws, name=experiment_name)
+    else:
+        # If it exists, get the existing experiment
+        experiment = ws.experiments[experiment_name]
 
-    environment.environment_variables = environment_variables
+    # Define a ScriptRunConfig
+    script_config = ScriptRunConfig(source_directory=".",
+                                    script="client.py",
+                                    compute_target="compute-resources",  # Specify your compute target
+                                    environment=environment,
+                                    arguments=["--data", data_asset.path])
 
-    # Set Docker build context to None to avoid conflict
-    environment.docker.base_image = None
-
-
-    inference_config.environment = environment
-     # Pass dataset path as an environment variable
-    deployment_config = AciWebservice.deploy_configuration()
-
-    deployed_service = Model.deploy(workspace=ws,
-                                    name=service_name,
-                                    models=[],
-                                    inference_config=inference_config,
-                                    deployment_config=deployment_config,
-                                    overwrite=True)
-
-    deployed_service.wait_for_deployment(show_output=True)
+    # Submit the job
+    run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+    run.wait_for_completion(show_output=True)
