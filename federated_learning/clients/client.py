@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 def client():
     data = os.environ.get('data')
+    logger.info(f"Client Started..")
+
+    logger.info(f"client data: {data}")
 
     # Create an LSTM model
     model = utils.create_lstm_model()
