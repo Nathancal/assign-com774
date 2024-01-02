@@ -12,9 +12,6 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Start MLflow run
-mlflow.start_run()
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
