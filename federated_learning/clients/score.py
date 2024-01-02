@@ -16,9 +16,6 @@ def run(raw_data):
         # Assuming raw_data is the path to a CSV file
         data = pd.read_csv(raw_data)
         
-        # Perform any necessary data preprocessing
-        # ...
-
         # Make predictions using the loaded model
         predictions = model.predict(data)
 

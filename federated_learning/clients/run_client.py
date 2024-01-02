@@ -11,6 +11,8 @@ import time
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+mlflow.set_tracking_uri("http://172.19.128.1:5000/")
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
