@@ -5,25 +5,30 @@ import utils
 from sklearn.model_selection import train_test_split
 import os
 import logging
+import argparse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def client():
-    data = os.environ.get('data')
+
+        # Define command-line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
+    args = parser.parse_args()
     logger.info(f"Client Started..")
 
-    logger.info(f"client data: {data}")
+    logger.info(f"client data: {args.data}")
 
     # Create an LSTM model
     model = utils.create_lstm_model()
-    
-    if data is None:
+
+    if args.data is None:
         raise ValueError("Invalid file path: 'data' environment variable is not set.")
 
     # Load client data
-    X, Y = utils.load_har_data(data)
+    X, Y = utils.load_har_data(args.data)
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y)
 
     logger.info(f"Loaded client data. X_train shape: {X_train.shape}, Y_train shape: {Y_train.shape}")
