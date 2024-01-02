@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
 
-subject_num = args.subject_num
+subject_num = args.total_subjects
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
