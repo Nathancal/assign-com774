@@ -63,6 +63,6 @@ if __name__ == "__main__":
         on_fit_config_fn=fit_round,
     )
     # Start the Flower server with the strategy for 10 runs
-    fl.server.start_server(server_address="127.0.0.1:8008",
+    fl.server.start_server(server_address="0.0.0.0:8008",
                            strategy=strategy,
                            config=fl.server.ServerConfig(num_rounds=25))
