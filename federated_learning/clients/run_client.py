@@ -11,7 +11,7 @@ import time
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-mlflow.set_tracking_uri("http://172.19.128.1:5000/")
+mlflow.set_tracking_uri("http://192.168.0.26:5000/")
 
 
 parser = argparse.ArgumentParser()
