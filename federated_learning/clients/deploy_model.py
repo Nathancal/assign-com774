@@ -16,8 +16,6 @@ environment = Environment.get(workspace=ws, name="testing")
 
 # Start Azure ML run
 run = Run.get_context()
-# Start Azure ML monitoring
-run.start_logging()
 
 def deploy_azure_model(model_name, model_path, accuracy_threshold=0.8):
     try:

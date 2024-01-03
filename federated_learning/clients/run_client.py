@@ -1,12 +1,9 @@
 import argparse
 from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run
 from azure.ai.ml import MLClient
-from azure.identity import DefaultAzureCredential, ClientSecretCredential
+from azure.identity import ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
-import time
-import os
-
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,9 +33,6 @@ ws = Workspace.from_config()
 environment = Environment.get(workspace=ws, name="development")
 # Get the current run
 run = Run.get_context()
-
-# Start Azure ML monitoring
-run.start_logging()
 
 # Function to submit a job
 def submit_job(subject_num):
@@ -87,9 +81,7 @@ def submit_job(subject_num):
         # Log additional metrics
         run.log("run_duration", run.get_metrics().get("DurationInSeconds"))
 
-        # Log artifacts
-        run.upload_file("outputs/model.h5", "model.h5")
-
+   
         logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
     except Exception as e:
