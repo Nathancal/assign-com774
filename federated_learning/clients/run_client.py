@@ -44,7 +44,7 @@ ml_client = MLClient(
 svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 svc_pr = ServicePrincipalAuthentication(
     tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="9da84d5d-c745-4ddc-bb1b-ff3574f5b530",
+    service_principal_id="1bee10b2-17dd-4a50-b8aa-488d27bdd5a1",
     service_principal_password=svc_pr_password
 )
 
