@@ -1,7 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 code: .
 command: python run_client.py --total_subjects 9
-environment: azureml:development:9
+environment: azureml:development:10
 compute: azureml:compute-resources
 experiment_name: Fed-Learning-Client-Staging-Env
 description: This job is for deploying the clients for the fed server job....
