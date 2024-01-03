@@ -1,5 +1,5 @@
 import argparse
-from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment
+from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
@@ -17,6 +17,14 @@ mlflow.set_tracking_uri("http://81.108.194.8:5000/")
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
+
+# Get the current run
+run = Run.get_context()
+
+# Get the job name from the run's properties
+job_name = run.get_metrics().get("AzureML.JobName")
+
+mlflow.set_experiment(job_name)
 
 subject_num = args.total_subjects
 
