@@ -55,15 +55,15 @@ def submit_job(subject_num):
             experiment = ws.experiments[experiment_name]
             logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
         # Get the dataset
-        datastore = ws.get_default_datastore()
-        dataset = Dataset.get_by_name(ws, name=dataset_name)
-        
-        all_datasets = Dataset.list(ws)
-        logger.info(all_datasets)
+            # Specify the name of your datastore
+        datastore_name = "workspaceblobstore"  
 
-        # Download the dataset to a local path
-        local_path = f"subject{subject_num + 1}.csv"
-        dataset.download(target_path=local_path, overwrite=True)
+        # Get the datastore
+        datastore = ws.datastores[datastore_name]
+        print(datastore)
+        # # Download the dataset to a local path
+        # local_path = f"subject{subject_num + 1}.csv"
+        # dataset.download(target_path=local_path, overwrite=True)
         # Define a ScriptRunConfig
         script_config = ScriptRunConfig(source_directory=".",
                                         script="client.py",
