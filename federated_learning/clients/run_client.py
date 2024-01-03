@@ -64,7 +64,7 @@ def submit_job(subject_num):
             logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
         
         inputs = {
-            "input_data": Input(type=AssetTypes.URI_FILE, path="./sample_data/titanic.csv"), 
+            "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
             "experiment_name": experiment
         }
 
