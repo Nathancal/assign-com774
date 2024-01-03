@@ -22,8 +22,6 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
 
-data_name = args.trainingdata
-
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 run = Run.get_context()
 
