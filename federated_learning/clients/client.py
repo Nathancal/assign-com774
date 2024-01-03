@@ -4,9 +4,11 @@ import utils
 from sklearn.model_selection import train_test_split
 import os
 import logging
+from azure.ai.ml import Input
+
 import argparse
 import datetime
-from azureml.core import Workspace, Model, Dataset, Datastore
+from azureml.core import Workspace, Model, Dataset, Datastore, Inp
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
 
@@ -24,7 +26,7 @@ def client():
     try:
         # Define command-line arguments
         parser = argparse.ArgumentParser()
-        parser.add_argument("--data", type=input, required=True, help='Path to the dataset')
+        parser.add_argument("--data", type=Input, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
 
