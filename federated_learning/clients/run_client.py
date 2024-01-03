@@ -19,7 +19,7 @@ tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
 client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
-credential = DefaultAzureCredential(client_id=client_id, tenant_id=tenant_id, client_secret=client_secret)
+credential = DefaultAzureCredential(client_id=client_id, client_secret=client_secret)
 
 ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
