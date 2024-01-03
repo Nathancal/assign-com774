@@ -65,7 +65,7 @@ def submit_job(subject_num):
         
         inputs = {
             "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
-            "experiment_name": experiment
+            "experiment_name": experiment.name
         }
 
 
