@@ -6,7 +6,7 @@ import os
 import logging
 import argparse
 import datetime
-from azureml.core import Workspace, Model
+from azureml.core import Workspace, Model, Dataset
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
 
@@ -27,11 +27,11 @@ def client():
         parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
+        dataset = Dataset.get_by_name(ws, name=args.data)
 
-        data_String = args.data
 
         logger.info(f"Client Started..")
-        logger.info(f"client data: {data_String}")
+        logger.info(f"client data: {dataset.to_pandas_dataframe}")
 
         # Create an LSTM model
         model = utils.create_lstm_model()
