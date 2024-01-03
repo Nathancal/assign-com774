@@ -3,7 +3,7 @@ from azureml.core import Workspace, Environment, Experiment, Run
 from azure.ai.ml import Input
 from azure.ai.ml import MLClient
 from azure.ai.ml.constants import AssetTypes
-from azure.identity import ClientSecretCredential
+from azure.identity import DefaultAzureCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
 from azure.ai.ml import command
@@ -28,17 +28,10 @@ resource_group = "assignment2-b00903995"
 workspace_name = "assignment2-ML-workspace"
 
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
-# Create a ServicePrincipalCredentials instance
-credentials = ClientSecretCredential(
-    client_id=client_id,
-    client_secret=client_secret,
-    tenant_id=tenant_id
-)
 
-# get a handle to the workspace
-ml_client = MLClient(
-    credentials, subscription_id, resource_group, workspace_name
-)
+
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+
 # Service principal authentication configuration
 svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
 svc_pr = ServicePrincipalAuthentication(
@@ -96,7 +89,10 @@ def submit_job(subject_num):
         # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
         run_id = run.id
         logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
-
+        # submit the command
+        returned_job = ml_client.jobs.create_or_update(job)
+        # get a URL for the status of the job
+        run.log("Studio_rul", returned_job.studio_url)
         # Log parameters to Azure ML
         run.log("subject_num", subject_num + 1)
         run.log("experiment_name", experiment_name)
