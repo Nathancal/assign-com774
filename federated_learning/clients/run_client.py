@@ -28,11 +28,13 @@ credentials = ClientSecretCredential(
     tenant_id=tenant_id
 )
 
-ws = Workspace.from_config(path='./config.json', auth=credentials)
+ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
 
 ml_client = MLClient.from_config(credential=credentials)
 
+# Get the current run context in an Azure ML job
+run = Run.get_context()
 # Function to submit a job
 def submit_job(subject_num):
     try:
