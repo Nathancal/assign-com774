@@ -28,8 +28,10 @@ def client():
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
 
+        data_String = args.data
+
         logger.info(f"Client Started..")
-        logger.info(f"client data: {args.data}")
+        logger.info(f"client data: {data_String}")
 
         # Create an LSTM model
         model = utils.create_lstm_model()
