@@ -8,7 +8,7 @@ from concurrent.futures import ProcessPoolExecutor
 import logging
 from azure.ai.ml import command
 from azure.ai.ml import UserIdentityConfiguration
-
+from azureml.core.authentication import ServicePrincipalAuthentication
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -39,10 +39,19 @@ credentials = ClientSecretCredential(
 ml_client = MLClient(
     credentials, subscription_id, resource_group, workspace_name
 )
+
+# Service principal authentication configuration
+svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+svc_pr = ServicePrincipalAuthentication(
+    tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
+    service_principal_id="9da84d5d-c745-4ddc-bb1b-ff3574f5b530",
+    service_principal_password=svc_pr_password
+)
+
+# Retrieve workspace using service principal authentication
+ws = Workspace.from_config(auth=svc_pr, path='./config.json')
      
 
-
-ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
 
 

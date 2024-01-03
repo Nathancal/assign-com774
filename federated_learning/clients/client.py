@@ -4,11 +4,10 @@ import utils
 from sklearn.model_selection import train_test_split
 import os
 import logging
-from azure.ai.ml import Input
-
+from azureml.core.authentication import ServicePrincipalAuthentication
 import argparse
 import datetime
-from azureml.core import Workspace, Model, Dataset, Datastore, Inp
+from azureml.core import Workspace, Model
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
 
@@ -16,8 +15,16 @@ from deploy_model import deploy_azure_model
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Service principal authentication configuration
+svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+svc_pr = ServicePrincipalAuthentication(
+    tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
+    service_principal_id="9da84d5d-c745-4ddc-bb1b-ff3574f5b530",
+    service_principal_password=svc_pr_password
+)
+
 # Load your Azure ML workspace
-ws = Workspace.from_config(path='./config.json')
+ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 
 # Get the current run context in an Azure ML job
 run = Run.get_context()
