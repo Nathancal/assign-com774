@@ -34,7 +34,7 @@ def client():
         path_parts = args.data.split('/')
 
         # Extract the dataset name from the last part of the path
-        dataset_name = path_parts[-1].split('.')[0]
+        dataset_name = path_parts[-1]
         dataset = Dataset.get_by_name(ws, name=dataset_name)
 
 
