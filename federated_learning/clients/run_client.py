@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
-
 subject_num = args.total_subjects
 
 # Replace with your actual values
@@ -26,6 +25,7 @@ environment = Environment.get(workspace=ws, name="development")
 data_name = args.trainingdata
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+run = Run.get_context()
 
 # Function to submit a job
 def submit_job(subject_num):
