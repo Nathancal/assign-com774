@@ -32,6 +32,7 @@ def client():
         datastore_name = "workspaceblobstore"
         datastore = Datastore.get(workspace=ws, datastore_name=datastore_name)
 
+        logger.info(f"datastore: {datastore.blob_service}, {datastore.container_name}, {datastore.client_secret}")
 
         data_asset = Dataset.Tabular.from_delimited_files((datastore, args.data))
 

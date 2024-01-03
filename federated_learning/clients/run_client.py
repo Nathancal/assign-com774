@@ -1,9 +1,15 @@
 import argparse
-from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run, Dataset
+from azureml.core import Workspace, Environment, Experiment, Run
+from azure.ai.ml import Input
 from azure.ai.ml import MLClient
+from azure.ai.ml.constants import AssetTypes
 from azure.identity import ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
+from azure.ai.ml import command
+from azure.ai.ml import UserIdentityConfiguration
+
+
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,7 +48,8 @@ def submit_job(subject_num):
         dataset_name = f"subject{subject_num + 1}"
 
         data_asset = ml_client.data._get_latest_version(dataset_name)
-    
+
+   
         # Create a unique experiment name with timestamp
         experiment_name = f"client_experiment_{subject_num + 1}"
 
@@ -55,16 +62,23 @@ def submit_job(subject_num):
             # If it exists, get the existing experiment
             experiment = ws.experiments[experiment_name]
             logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
+        
+        inputs = {
+            "input_data": Input(type=AssetTypes.URI_FILE, path="./sample_data/titanic.csv"), 
+            "experiment_name": experiment
+        }
 
-        # Define a ScriptRunConfig
-        script_config = ScriptRunConfig(source_directory=".",
-                                        script="client.py",
-                                        compute_target="compute-resources",  # Specify your compute target
-                                        environment=environment,
-                                        arguments=["--data", data_asset.path, "--experiment_name", experiment_name])
 
-        # Start the Azure ML run
-        run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+        job = command(
+            code="./src",  # local path where the code is stored
+            command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+            inputs=inputs,
+            environment=environment,
+            compute="compute-resources",
+            identity=UserIdentityConfiguration(),
+        )
+        # # Start the Azure ML run
+        # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
         run_id = run.id
         logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
 
