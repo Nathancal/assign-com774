@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 # Service principal authentication configuration
-svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
 svc_pr = ServicePrincipalAuthentication(
     tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="1bee10b2-17dd-4a50-b8aa-488d27bdd5a1",
+    service_principal_id="e70fc852-7682-4b72-8238-e602dce30ecc",
     service_principal_password=svc_pr_password
 )
 # Connect to your Azure ML workspace

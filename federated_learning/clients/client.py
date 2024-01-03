@@ -16,10 +16,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Service principal authentication configuration
-svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
 svc_pr = ServicePrincipalAuthentication(
     tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="9da84d5d-c745-4ddc-bb1b-ff3574f5b530",
+    service_principal_id="e70fc852-7682-4b72-8238-e602dce30ecc",
     service_principal_password=svc_pr_password
 )
 
