@@ -1,5 +1,5 @@
 import argparse
-from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run
+from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run, Dataset
 from azure.ai.ml import MLClient
 from azure.identity import ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
@@ -54,13 +54,19 @@ def submit_job(subject_num):
             # If it exists, get the existing experiment
             experiment = ws.experiments[experiment_name]
             logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
+        # Get the dataset
+        datastore = ws.get_default_datastore()
+        dataset = Dataset.get_by_name(ws, name=dataset_name)
 
+        # Download the dataset to a local path
+        local_path = f"subject{subject_num + 1}.csv"
+        dataset.download(target_path=local_path, overwrite=True)
         # Define a ScriptRunConfig
         script_config = ScriptRunConfig(source_directory=".",
                                         script="client.py",
                                         compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
-                                        arguments=["--data", data_asset.path, "--experiment_name", experiment_name])
+                                        arguments=["--data", local_path, "--experiment_name", experiment_name])
 
         # Start the Azure ML run
         run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
