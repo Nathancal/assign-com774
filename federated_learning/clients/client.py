@@ -27,7 +27,15 @@ def client():
         parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
-        dataset = Dataset.get_by_name(ws, name=args.data)
+
+
+
+                # Split the path by '/'
+        path_parts = args.data.split('/')
+
+        # Extract the dataset name from the last part of the path
+        dataset_name = path_parts[-1].split('.')[0]
+        dataset = Dataset.get_by_name(ws, name=dataset_name)
 
 
         logger.info(f"Client Started..")
