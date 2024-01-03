@@ -1,7 +1,7 @@
 import argparse
 from azureml.core import Workspace, Environment, ScriptRunConfig, Experiment, Run, Dataset
 from azure.ai.ml import MLClient
-from azure.identity import ClientSecretCredential
+from azure.identity import DefaultAzureCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
 # Configure logger
@@ -22,17 +22,17 @@ client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
-credentials = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
-
-ml_client = MLClient.from_config(credential=credentials)
-
-# Load your Azure ML workspace
-ws = Workspace.from_config()
-
-# Get the latest version of the Azure ML environment
+ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
-# Get the current run
-run = Run.get_context()
+
+# Get the arguments we need to avoid fixing the dataset path in code
+parser = argparse.ArgumentParser()
+parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
+args = parser.parse_args()
+
+data_name = args.trainingdata
+
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
 # Function to submit a job
 def submit_job(subject_num):
@@ -41,7 +41,7 @@ def submit_job(subject_num):
         dataset_name = f"subject{subject_num + 1}"
 
         data_asset = ml_client.data._get_latest_version(dataset_name)
-
+    
         # Create a unique experiment name with timestamp
         experiment_name = f"client_experiment_{subject_num + 1}"
 
@@ -60,10 +60,15 @@ def submit_job(subject_num):
 
         # Get the datastore
         datastore = ws.datastores[datastore_name]
-        print(datastore)
-        # # Download the dataset to a local path
-        # local_path = f"subject{subject_num + 1}.csv"
-        # dataset.download(target_path=local_path, overwrite=True)
+        print("DATASTORE" + datastore)
+
+        data_asset_group = datastore.data_asset[dataset_name]
+
+        print("DATAASSET:" + data_asset_group)
+
+        # Download the dataset to a local path
+        local_path = f"subject{subject_num + 1}.csv"
+        data_asset_group.download(target_path=local_path, overwrite=True)
         # Define a ScriptRunConfig
         script_config = ScriptRunConfig(source_directory=".",
                                         script="client.py",
