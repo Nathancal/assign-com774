@@ -5,9 +5,13 @@ import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
-from azureml.core import Workspace
+from azureml.core import Workspace, Model, Environment
 import mlflow
+import datetime
 from keras.models import save_model
+from azureml.core.webservice import AciWebservice
+from azureml.core.model import InferenceConfig
+
 
 # Replace with your actual values
 tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
@@ -15,8 +19,10 @@ client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
+
 # Load Azure Machine Learning workspace from configuration file
 ws = Workspace.from_config(path='./config.json')
+environment = Environment.get(workspace=ws, name="development")
 
 # Get the arguments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -74,22 +80,47 @@ fl.server.start_server(server_address="0.0.0.0:8008",
                        strategy=strategy,
                        config=fl.server.ServerConfig(num_rounds=25))
 
+# Get the current date and time
+current_datetime = datetime.now()
+
+# Format as a string
+formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
 
 # Save the federated model after training
-save_model(model, "federated_model.h5")
+save_model(model, "federated_model_{formatted_datetime}.h5")
 
-# Deploy the model as a web service
-service_name = f"{model_name.lower()}-service"
-service = Model.deploy(workspace=ws,
-                                   name=service_name,
-                                   models=[model],
-                                   inference_config=inference_config,
-                                   deployment_config=aciconfig)
-service.wait_for_deployment(show_output=True)
-# After saving the federated model
-mlflow.log_artifact("federated_model.h5")
-model_path = mlflow.get_artifact_uri("federated_model.h5")
-mlflow.register_model(model_path, "federated_model")
+
+
+# After saving the individual models
+mlflow.log_artifact(f"federated_model_{formatted_datetime}.h5")
+model_path = mlflow.get_artifact_uri(f"federated_model_{formatted_datetime}.h5")
+mlflow.register_model(model_path, f"federated_model_{formatted_datetime}")
+
+model = Model.register(workspace=ws, model_path=model_path, model_name=f"federated_model_{formatted_datetime}")
+
+
+# Retrieve accuracy from MLflow
+run = mlflow.get_run()
+accuracy = run.data.metrics.get("accuracy", 0.0)
+
+accuracy_threshold=0.8
+        # Deploy only if accuracy is greater than the threshold
+if accuracy > accuracy_threshold:
+    # Define inference configuration
+    inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file=environment)
+
+            # Deploy the model as a web service
+    aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
+
+
+    # Deploy the model as a web service
+    service_name = f"{model.name.lower()}-service"
+    service = Model.deploy(workspace=ws,
+                                    name=service_name,
+                                    models=[model],
+                                    inference_config=inference_config,
+                                    deployment_config=aciconfig)
+    service.wait_for_deployment(show_output=True)
 
 # End MLflow run
 mlflow.end_run()
