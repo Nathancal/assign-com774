@@ -26,7 +26,7 @@ def client():
     try:
         # Define command-line arguments
         parser = argparse.ArgumentParser()
-        parser.add_argument("--data", type=Input, required=True, help='Path to the dataset')
+        parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
 
