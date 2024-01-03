@@ -12,8 +12,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
 
-
-
 subject_num = args.total_subjects
 
 # Replace with your actual values
@@ -24,11 +22,6 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
 ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
-
-# Get the arguments we need to avoid fixing the dataset path in code
-parser = argparse.ArgumentParser()
-parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
-args = parser.parse_args()
 
 data_name = args.trainingdata
 
@@ -62,19 +55,14 @@ def submit_job(subject_num):
         datastore = ws.datastores[datastore_name]
         print("DATASTORE" + datastore)
 
-        data_asset_group = datastore.data_asset[dataset_name]
+        data_asset = Dataset.Tabular.from_delimited_files((datastore, data_asset.path), separator=',')
 
-        print("DATAASSET:" + data_asset_group)
-
-        # Download the dataset to a local path
-        local_path = f"subject{subject_num + 1}.csv"
-        data_asset_group.download(target_path=local_path, overwrite=True)
         # Define a ScriptRunConfig
         script_config = ScriptRunConfig(source_directory=".",
                                         script="client.py",
                                         compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
-                                        arguments=["--data", local_path, "--experiment_name", experiment_name])
+                                        arguments=["--data", data_asset, "--experiment_name", experiment_name])
 
         # Start the Azure ML run
         run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
