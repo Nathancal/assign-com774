@@ -36,6 +36,10 @@ ws = Workspace.from_config()
 environment = Environment.get(workspace=ws, name="development")
 # Get the current run
 run = Run.get_context()
+
+# Start Azure ML monitoring
+run.start_logging()
+
 # Function to submit a job
 def submit_job(subject_num):
     try:

@@ -19,6 +19,8 @@ ws = Workspace.from_config()
 
 # Get the current run context in an Azure ML job
 run = Run.get_context()
+# Start Azure ML monitoring
+run.start_logging()
 
 def client():
     try:
