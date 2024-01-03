@@ -4,15 +4,11 @@ from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
-import mlflow
 import time
-
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-mlflow.set_tracking_uri("http://81.108.194.8:5000/")
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
@@ -20,9 +16,6 @@ args = parser.parse_args()
 
 # Get the current run
 run = Run.get_context()
-
-# Get the job name from the run's properties
-job_name = run.get_metrics().get("AzureML.JobName")
 
 subject_num = args.total_subjects
 
@@ -45,7 +38,6 @@ environment = Environment.get(workspace=ws, name="development")
 # Function to submit a job
 def submit_job(subject_num):
     try:
-        
         # Specify the name of the dataset
         dataset_name = f"subject{subject_num + 1}"
 
@@ -70,28 +62,33 @@ def submit_job(subject_num):
                                         compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
                                         arguments=["--data", data_asset.path, "--experiment_name", experiment_name])
-        
-        with mlflow.start_run(experiment_name="Fed-Learning-Client-Staging-Env"):
-            # Log parameters to MLflow
-            mlflow.log_param("subject_num", subject_num + 1)
-            mlflow.log_param("experiment_name", experiment_name)
 
-            # Submit the job
-            run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-            logger.info(f"Job for subject {subject_num + 1} submitted.")
-            
-            # Log run ID and experiment ID to MLflow
-            mlflow.log_param("run_id", run.id)
-            mlflow.log_param("experiment_id", experiment.id)
+        # Start the Azure ML run
+        run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+        run_id = run.id
+        logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
+
+        # Log parameters to Azure ML
+        run.log("subject_num", subject_num + 1)
+        run.log("experiment_name", experiment_name)
+
+        # Log run ID and experiment ID to Azure ML
+        run.log("run_id", run.id)
+        run.log("experiment_id", experiment.id)
+
+        # Wait for the run to complete
+        run.wait_for_completion()
+
+        logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
     except Exception as e:
         logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
-        # Log exception to MLflow
-        mlflow.log_param("error_message", str(e))
+        # Log exception to Azure ML
+        run.log("error_message", str(e))
 
 # Submit jobs in parallel
 with ProcessPoolExecutor() as executor:
     executor.map(submit_job, range(args.total_subjects))
-    # End MLflow run
-    mlflow.end_run()
-    
+
+# End Azure ML run
+run.complete()
