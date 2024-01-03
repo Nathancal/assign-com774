@@ -24,8 +24,6 @@ run = Run.get_context()
 # Get the job name from the run's properties
 job_name = run.get_metrics().get("AzureML.JobName")
 
-mlflow.set_experiment(job_name)
-
 subject_num = args.total_subjects
 
 # Replace with your actual values
@@ -71,9 +69,9 @@ def submit_job(subject_num):
                                         script="client.py",
                                         compute_target="compute-resources",  # Specify your compute target
                                         environment=environment,
-                                        arguments=["--data", data_asset.path])
+                                        arguments=["--data", data_asset.path, "--experiment_name", experiment_name])
         
-        with mlflow.start_run():
+        with mlflow.start_run(experiment_name="Fed-Learning-Client-Staging-Env"):
             # Log parameters to MLflow
             mlflow.log_param("subject_num", subject_num + 1)
             mlflow.log_param("experiment_name", experiment_name)

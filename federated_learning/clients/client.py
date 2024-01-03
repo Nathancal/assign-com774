@@ -20,13 +20,18 @@ ws = Workspace.from_config()
 
 
 def client():
-    try:
-        with mlflow.start_run(nested=True):
 
-            # Define command-line arguments
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
-            args = parser.parse_args()
+    try:
+
+        # Define command-line arguments
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
+        parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
+        args = parser.parse_args()
+
+        with mlflow.start_run(nested=True, experiment_name=args.experiment_name):
+
+    
             logger.info(f"Client Started..")
 
             logger.info(f"client data: {args.data}")

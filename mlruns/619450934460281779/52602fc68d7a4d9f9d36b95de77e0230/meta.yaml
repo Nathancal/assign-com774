@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/619450934460281779/52602fc68d7a4d9f9d36b95de77e0230/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '619450934460281779'
+lifecycle_stage: active
+run_id: 52602fc68d7a4d9f9d36b95de77e0230
+run_name: righteous-crane-202
+run_uuid: 52602fc68d7a4d9f9d36b95de77e0230
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704288352786
+status: 1
+tags: []
+user_id: root
