@@ -24,7 +24,8 @@ subject_num = args.total_subjects
 tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
 client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
-
+resource_group = "assignment2-b00903995"
+workspace_name = "assignment2-ML-workspace"
 
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 # Create a ServicePrincipalCredentials instance
@@ -34,10 +35,16 @@ credentials = ClientSecretCredential(
     tenant_id=tenant_id
 )
 
+# get a handle to the workspace
+ml_client = MLClient(
+    credentials, subscription_id, resource_group, workspace_name
+)
+     
+
+
 ws = Workspace.from_config(path='./config.json')
 environment = Environment.get(workspace=ws, name="development")
 
-ml_client = MLClient.from_config(credential=credentials)
 
 # Get the current run context in an Azure ML job
 run = Run.get_context()
