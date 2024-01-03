@@ -15,8 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
 args = parser.parse_args()
 
-# Get the current run
-run = Run.get_context()
+
 
 subject_num = args.total_subjects
 
@@ -35,7 +34,8 @@ ws = Workspace.from_config()
 
 # Get the latest version of the Azure ML environment
 environment = Environment.get(workspace=ws, name="development")
-
+# Get the current run
+run = Run.get_context()
 # Function to submit a job
 def submit_job(subject_num):
     try:
