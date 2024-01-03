@@ -24,21 +24,10 @@ def client():
     try:
         # Define command-line arguments
         parser = argparse.ArgumentParser()
-        parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
+        parser.add_argument("--data", type=input, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
 
-
-        datastore_name = "workspaceblobstore"
-        datastore = Datastore.get(workspace=ws, datastore_name=datastore_name)
-
-        logger.info(f"datastore: {datastore.blob_service}, {datastore.container_name}, {datastore.client_secret}")
-
-        data_asset = Dataset.Tabular.from_delimited_files((datastore, args.data))
-
-
-        logger.info(f"Client Started..")
-        logger.info(f"client data: {data_asset.to_pandas_dataframe}")
 
         # Create an LSTM model
         model = utils.create_lstm_model()
