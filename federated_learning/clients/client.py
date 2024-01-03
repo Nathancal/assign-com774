@@ -6,7 +6,7 @@ import os
 import logging
 import argparse
 import datetime
-from azureml.core import Workspace, Model, Dataset
+from azureml.core import Workspace, Model, Dataset, Datastore
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
 
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Load your Azure ML workspace
-ws = Workspace.from_config()
+ws = Workspace.from_config(path='./config.json')
 
 # Get the current run context in an Azure ML job
 run = Run.get_context()
@@ -29,17 +29,15 @@ def client():
         args = parser.parse_args()
 
 
+        datastore_name = "workspaceblobstore"
+        datastore = Datastore.get(workspace=ws, datastore_name=datastore_name)
 
-                # Split the path by '/'
-        path_parts = args.data.split('/')
 
-        # Extract the dataset name from the last part of the path
-        dataset_name = path_parts[-1]
-        dataset = Dataset.get_by_name(ws, name=dataset_name)
+        data_asset = Dataset.Tabular.from_delimited_files((datastore, args.data))
 
 
         logger.info(f"Client Started..")
-        logger.info(f"client data: {dataset.to_pandas_dataframe}")
+        logger.info(f"client data: {data_asset.to_pandas_dataframe}")
 
         # Create an LSTM model
         model = utils.create_lstm_model()
