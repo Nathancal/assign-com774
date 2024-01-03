@@ -61,7 +61,7 @@ def submit_job(subject_num):
         else:
             # If it exists, get the existing experiment
             experiment = ws.experiments[experiment_name]
-            logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
+            logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
         
         inputs = {
             "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
