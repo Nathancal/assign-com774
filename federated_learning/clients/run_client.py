@@ -5,6 +5,7 @@ from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
 import time
+import os
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +28,7 @@ subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
 
 credentials = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential(credentials=credentials))
+ml_client = MLClient.from_config(credential=credentials)
 
 # Load your Azure ML workspace
 ws = Workspace.from_config()
@@ -78,6 +79,12 @@ def submit_job(subject_num):
 
         # Wait for the run to complete
         run.wait_for_completion()
+
+        # Log additional metrics
+        run.log("run_duration", run.get_metrics().get("DurationInSeconds"))
+
+        # Log artifacts
+        run.upload_file("outputs/model.h5", "model.h5")
 
         logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
