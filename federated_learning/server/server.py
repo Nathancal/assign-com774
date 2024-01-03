@@ -43,8 +43,6 @@ X, Y = utils.load_har_data(data_asset.path)
 print(X)
 print(Y)
 
-# Start MLflow run
-mlflow.start_run()
 
 model = utils.create_lstm_model()
 

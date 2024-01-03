@@ -82,6 +82,11 @@ def client():
                     loss, accuracy = model.evaluate(X_test, Y_test)
                     logger.info(f"Evaluation completed. Loss: {loss}, Accuracy: {accuracy}")
                     return loss, len(X_test), {"accuracy": accuracy}
+                
+        # Connect to the server
+        fl.client.start_client("40.68.31.180:8008", client=HARClient())
+
+
         mlflow.end_run()
     except Exception as e:
         logger.error(f"Error in client script: {str(e)}")
