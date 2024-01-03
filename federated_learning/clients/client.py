@@ -35,7 +35,7 @@ def client():
         model = utils.create_lstm_model()
 
         if args.data is None:
-            raise ValueError("Invalid file path: 'data' environment variable is not set..")
+            raise ValueError("Invalid file path: 'data' environment variable is not set....")
 
         # Load client data
         X, Y = utils.load_har_data(args.data)
