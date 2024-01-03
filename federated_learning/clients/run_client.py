@@ -57,6 +57,9 @@ def submit_job(subject_num):
         # Get the dataset
         datastore = ws.get_default_datastore()
         dataset = Dataset.get_by_name(ws, name=dataset_name)
+        
+        all_datasets = Dataset.list(ws)
+        logger.info(all_datasets)
 
         # Download the dataset to a local path
         local_path = f"subject{subject_num + 1}.csv"
