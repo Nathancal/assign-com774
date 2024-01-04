@@ -105,7 +105,7 @@ def client():
                 return loss, len(X_test), {"accuracy": accuracy}
 
         # Connect to the server
-        fl.client.start_client("40.68.31.180:8008", client=HARClient())
+        fl.client.start_client(server_address="40.68.31.180:8008", client=HARClient())
 
     except Exception as e:
         logger.error(f"Error in client script: {str(e)}")

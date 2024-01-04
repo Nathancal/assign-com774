@@ -5,14 +5,26 @@ from keras.layers import LSTM, Dense
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from azureml.core import Run
+import logging
+
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def load_har_data(file):
     df = pd.read_csv(file)   
-    df = df.dropna()
 
+    logger.info("GETS HERE!!")
+    
     df['activity'] = df['activity'].replace('downstaire', 'downstairs')
     df['activity'] = df['activity'].replace('upstaires', 'upstairs')
 
+    logger.info("GETS HERE!!")
+
+
+    df = df.dropna()
+
+   
     # Extract features and labels
     X = df.drop('activity', axis=1).values
     Y = df['activity'].values
