@@ -1,5 +1,6 @@
 import argparse
-from azureml.core import Workspace, Environment, Experiment, Run
+from azureml.core import Workspace, Experiment, Run
+from azure.ai.ml.entities._assets.environment import Environment
 from azure.ai.ml import Input
 from azure.ai.ml import MLClient
 from azure.ai.ml.constants import AssetTypes
@@ -81,7 +82,7 @@ def submit_job(subject_num):
             code="./src",  # local path where the code is stored
             command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
             inputs=inputs,
-            environment=environment,
+            environment="azureml:development:12",
             compute="compute-resources",
             identity=UserIdentityConfiguration(),
         )

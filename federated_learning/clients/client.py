@@ -15,14 +15,14 @@ from deploy_model import deploy_azure_model
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Authenticate using service principal credentials
 # Service principal authentication configuration
-svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
+svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 svc_pr = ServicePrincipalAuthentication(
     tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="3cceb807-3a6b-425a-9451-40691673e02f",
+    service_principal_id="1bee10b2-17dd-4a50-b8aa-488d27bdd5a1",
     service_principal_password=svc_pr_password
 )
-
 # Load your Azure ML workspace
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 
