@@ -22,7 +22,7 @@ subject_num = args.total_subjects
 
 # Replace with your actual values
 tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
-client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
+client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 resource_group = "assignment2-b00903995"
 workspace_name = "assignment2-ML-workspace"
@@ -36,8 +36,8 @@ ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
 svc_pr = ServicePrincipalAuthentication(
     tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="3cceb807-3a6b-425a-9451-40691673e02f",
-    service_principal_password=svc_pr_password
+    service_principal_id="e70fc852-7682-4b72-8238-e602dce30ecc",
+    service_principal_password=svc_pr_password,
 )
 
 # Retrieve workspace using service principal authentication
