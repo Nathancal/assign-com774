@@ -9,8 +9,9 @@ from azureml.core import Run
 def load_har_data(file):
     df = pd.read_csv(file)   
     df = df.dropna()
-    
+
     df['activity'] = df['activity'].replace('downstaire', 'downstairs')
+    df['activity'] = df['activity'].replace('upstaires', 'upstairs')
 
     # Extract features and labels
     X = df.drop('activity', axis=1).values
