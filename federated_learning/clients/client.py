@@ -10,6 +10,7 @@ import datetime
 from azureml.core import Workspace, Model
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
+import mlflow
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,12 +39,18 @@ run = Run.get_context()
 
 def client():
     try:
+        # Initialize MLflow
+        mlflow_location = "westeurope"
+        subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
+        mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
+        mlflow.start_run()
+        mlflow.log_param("total_subjects", args.total_subjects)
+
         # Define command-line arguments
         parser = argparse.ArgumentParser()
         parser.add_argument("--data", type=str, required=True, help='Path to the dataset')
         parser.add_argument("--experiment_name", type=str, required=True, help='experiment name')
         args = parser.parse_args()
-
 
         # Create an LSTM model
         model = utils.create_lstm_model()
@@ -76,12 +83,11 @@ def client():
                 formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
 
                 # Save the model after training
-                model.save(f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
+                model_path = f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5"
+                model.save(model_path)
 
                 # Log the model file as an artifact to Azure ML
-                run.upload_file(f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
-
-                model_path = os.path.join(run.get_metrics()["output"], f"client_model_subject{config['subject_id']}_{formatted_datetime}.h5")
+                run.upload_file(model_path)
 
                 # Register the model with Azure ML
                 model = Model.register(workspace=ws, model_path=model_path, model_name=f"client_model_subject{config['subject_id']}_{formatted_datetime}")
