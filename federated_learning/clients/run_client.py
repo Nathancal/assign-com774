@@ -27,24 +27,24 @@ client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 resource_group = "assignment2-b00903995"
 workspace_name = "assignment2-ML-workspace"
 
+
 subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
+# Service principal credentials
+client_id = "<your-client-id>"
+tenant_id = "<your-tenant-id>"
+client_secret = "<your-client-secret>"
+
+# Authenticate using service principal credentials
+credential = DefaultAzureCredential(client_id=client_id, tenant_id=tenant_id, client_secret=client_secret)
+
+# Connect to Azure ML workspace
+workspace = Workspace(subscription_id="<your-subscription-id>", resource_group="<your-resource-group>", workspace_name="<your-workspace-name>")
 
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
-
-# Service principal authentication configuration
-svc_pr_password = "OOs8Q~49addjfts6Dw4xbzPOStOtzdkZRzj81cDm"
-svc_pr = ServicePrincipalAuthentication(
-    tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
-    service_principal_id="e70fc852-7682-4b72-8238-e602dce30ecc",
-    service_principal_password=svc_pr_password,
-)
-
-# Retrieve workspace using service principal authentication
-ws = Workspace.from_config(auth=svc_pr, path='./config.json')
      
 
-environment = Environment.get(workspace=ws, name="development")
+environment = Environment.get(workspace=workspace, name="development")
 
 
 # Get the current run context in an Azure ML job
