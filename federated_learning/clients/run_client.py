@@ -7,7 +7,6 @@ from concurrent.futures import ProcessPoolExecutor
 import logging
 from azureml.core.authentication import ServicePrincipalAuthentication
 import psutil
-import mlflow.azureml
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -45,16 +44,6 @@ ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 
 mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
 
-# If using service principal authentication, set the credentials
-mlflow.azureml.init(
-    workspace_name=workspace_name,
-    subscription_id=subscription_id,
-    resource_group=resource_group,
-    location=mlflow_location,
-    client_id=client_id,
-    client_secret=client_secret,
-    tenant_id=tenant_id,
-)
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
      
@@ -108,18 +97,19 @@ def submit_job(subject_num):
             #     experiment_name=experiment_name,  # Pass the experiment name to your job
             # )
 
-            mlflow.azureml.run(
-                script_name="client.py",
-                arguments=[
-                    "--data", f"azureml://{data_asset.name}/{data_asset.version}",
-                    "--experiment_name", experiment_name
-                ],
-                backend="azureml",
-                backend_config={
+    
+            backend_config={
                     "compute": "compute-resources",
                     "environment": f"azureml://{environment_name}:{environment_version}",
-                },
-            )
+            }
+            
+            remote_mlflow_run = mlflow.projects.run(uri="./client.py", 
+                                    parameters={ 
+                                        "--data", f"azureml://{data_asset.name}/{data_asset.version}",
+                                        "--experiment_name", experiment_name},
+                                    backend = "azureml",
+                                    backend_config = backend_config,
+                                    synchronous=True)
 
                # Log memory usage
             memory_usage = psutil.virtual_memory().percent

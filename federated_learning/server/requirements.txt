@@ -14,3 +14,4 @@ azureml==0.2.7
 azureml-core
 mlflow==2.9.2
 azureml-sdk
+azureml-mlflow
