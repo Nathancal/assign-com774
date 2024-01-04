@@ -85,7 +85,7 @@ def submit_job(subject_num):
             inputs=inputs,
             environment=f"azureml:{environment_name}:{environment_version}",
             compute="compute-resources",
-            identity=UserIdentityConfiguration(),
+            identity=svc_pr,
             experiment_name=experiment_name,  # Pass the experiment name to your job
         )
         # # Start the Azure ML run
