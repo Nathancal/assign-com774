@@ -81,58 +81,55 @@ def submit_job(subject_num):
                 logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
             
             inputs = {
-                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path),
+                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
                 "experiment_name": experiment.name
             }
 
-            # Define your job with the correct environment name and version
             with mlflow.start_run(nested=True):
-                mlflow.command(
-                    uri="./",  # local path where the code is stored
-                    command=f"python client.py --data {inputs['input_data']} --experiment_name {inputs['experiment_name']}",
-                    parameters={},
+                mlflow.log_param("total_subjects", args.total_subjects)
+
+                # Define your job with the correct environment name and version
+                job = command(
+                    code="./",  # local path where the code is stored
+                    command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+                    inputs=inputs,
                     environment=f"azureml:{environment_name}:{environment_version}",
                     compute="compute-resources",
                     experiment_name=experiment_name,  # Pass the experiment name to your job
                 )
 
-            # Log memory usage
-            memory_usage = psutil.virtual_memory().percent
-            mlflow.log_metric("memory_usage_percent", memory_usage)
+                # Assuming ml_client is your MLClient instance
+                returned_job = ml_client.jobs.create_or_update(job)
 
-            # Log CPU usage
-            cpu_usage = psutil.cpu_percent()
-            mlflow.log_metric("cpu_usage_percent", cpu_usage)
+                # Log memory usage
+                memory_usage = psutil.virtual_memory().percent
+                mlflow.log_metric("memory_usage_percent", memory_usage)
 
-               # Log memory usage
-            memory_usage = psutil.virtual_memory().percent
-            mlflow.log_metric("memory_usage_percent", memory_usage)
+                # Log CPU usage
+                cpu_usage = psutil.cpu_percent()
+                mlflow.log_metric("cpu_usage_percent", cpu_usage)
+                # # Start the Azure ML run
+                # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+                run_id = mlflow.active_run().info.run_id
+                logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
+                # submit the command
 
-            # Log CPU usage
-            cpu_usage = psutil.cpu_percent()
-            mlflow.log_metric("cpu_usage_percent", cpu_usage)
-            # # Start the Azure ML run
-            # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-            run_id = mlflow.active_run().info.run_id
-            logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
-            # submit the command
+                mlflow.log_param("subject_num", subject_num + 1)
+                mlflow.log_param("experiment_name", experiment_name)
+                mlflow.log_param("run_id", run_id)
+                mlflow.log_param("experiment_id", experiment.id)
+                
+                job_status = returned_job.get_status()
+                mlflow.log_param("job_status", job_status)
 
-            mlflow.log_param("subject_num", subject_num + 1)
-            mlflow.log_param("experiment_name", experiment_name)
-            mlflow.log_param("run_id", run_id)
-            mlflow.log_param("experiment_id", experiment.id)
-            
-            job_status = returned_job.get_status()
-            mlflow.log_param("job_status", job_status)
+                # Wait for the run to complete
+                mlflow.wait_for_completion()
 
-            # Wait for the run to complete
-            mlflow.wait_for_completion()
+                # Log additional metrics
+                mlflow.log_metric("run_duration", run.get_metrics().get("DurationInSeconds"))
 
-            # Log additional metrics
-            mlflow.log_metric("run_duration", run.get_metrics().get("DurationInSeconds"))
-
-    
-            logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
+        
+                logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
         except Exception as e:
             logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
