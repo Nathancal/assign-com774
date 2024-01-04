@@ -1,14 +1,13 @@
 import argparse
-from mlflow.tracking import MlflowClient
+import mlflow
 from azureml.core import Workspace, Experiment, Run, Environment
-from azure.ai.ml import MLClient
+from azure.ai.ml import MLClient, command, Input
+from azure.ai.ml.constants import AssetTypes
 from azure.identity import DefaultAzureCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
 from azureml.core.authentication import ServicePrincipalAuthentication
 import psutil
-import mlflow
-
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -42,16 +41,13 @@ svc_pr = ServicePrincipalAuthentication(
 
 # Connect to Azure ML workspace
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
 
 mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
 
-azureml_tracking_uri = ml_client.workspaces.get(
-    ml_client.workspace_name
-).mlflow_tracking_uri
-mlflow.set_tracking_uri(azureml_tracking_uri)
+mlflow.autolog()
 
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
      
 
 environment = Environment.get(workspace=ws, name="development")
@@ -87,35 +83,22 @@ def submit_job(subject_num):
                 experiment = ws.experiments[experiment_name]
                 logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
             
-            # inputs = {
-            #     "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
-            #     "experiment_name": experiment.name
-            # }
-
-            # # Define your job with the correct environment name and version
-            # job = command(
-            #     code="./",  # local path where the code is stored
-            #     command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
-            #     inputs=inputs,
-            #     environment=f"azureml:{environment_name}:{environment_version}",
-            #     compute="compute-resources",
-            #     identity=svc_pr,
-            #     experiment_name=experiment_name,  # Pass the experiment name to your job
-            # )
-
-    
-            backend_config={
-                    "compute": "compute-resources",
-                    "environment": f"azureml://{environment_name}:{environment_version}",
+            inputs = {
+                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
+                "experiment_name": experiment.name
             }
-            
-            remote_mlflow_run = mlflow.projects.run(uri="./client.py", 
-                                    parameters={ 
-                                        "--data", f"azureml://{data_asset.name}/{data_asset.version}",
-                                        "--experiment_name", experiment_name},
-                                    backend = "azureml",
-                                    backend_config = backend_config,
-                                    synchronous=True)
+
+            # Define your job with the correct environment name and version
+            job = command(
+                code="./",  # local path where the code is stored
+                command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+                inputs=inputs,
+                environment=f"azureml:{environment_name}:{environment_version}",
+                compute="compute-resources",
+                identity=svc_pr,
+                experiment_name=experiment_name,  # Pass the experiment name to your job
+            )
+
 
                # Log memory usage
             memory_usage = psutil.virtual_memory().percent
