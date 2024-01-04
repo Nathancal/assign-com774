@@ -1,17 +1,13 @@
 import argparse
+import mlflow
 from azureml.core import Workspace, Experiment, Run, Environment
-from azure.ai.ml import Input
 from azure.ai.ml import MLClient
-from azure.ai.ml.constants import AssetTypes
 from azure.identity import DefaultAzureCredential
 from concurrent.futures import ProcessPoolExecutor
 import logging
-from azure.ai.ml import command
-from azure.ai.ml import UserIdentityConfiguration
 from azureml.core.authentication import ServicePrincipalAuthentication
-import mlflow
 import psutil
-
+import mlflow.azureml
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)

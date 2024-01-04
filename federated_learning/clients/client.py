@@ -1,8 +1,6 @@
 import flwr as fl
-import numpy as np
 import utils
 from sklearn.model_selection import train_test_split
-import os
 import logging
 from azureml.core.authentication import ServicePrincipalAuthentication
 import argparse
