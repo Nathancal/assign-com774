@@ -8,6 +8,7 @@ COPY . /federated_learning/server
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Make port 8080 available to the world outside this container
+EXPOSE 8008
 EXPOSE 8080
 
 # Define environment variable

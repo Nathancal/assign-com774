@@ -1,24 +1,15 @@
 import flwr as fl
 from typing import Dict
-import utils 
+import utils
 import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
-from azureml.core import Workspace, Model, Environment
-import mlflow
-import datetime
-from keras.models import save_model
+from azureml.core import Workspace,  Environment, Run
 from azureml.core.webservice import AciWebservice
-from azureml.core.model import InferenceConfig
-
-
-# Replace with your actual values
-tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
-client_id = "1bee10b2-17dd-4a50-b8aa-488d27bdd5a1"
-client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
-subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
-
+from azureml.core.model import InferenceConfig, Model
+from keras.models import save_model
+import datetime
 
 # Load Azure Machine Learning workspace from configuration file
 ws = Workspace.from_config(path='./config.json')
@@ -36,18 +27,20 @@ data_asset = ml_client.data.get("combined_data_sub1-9", version="1")
 
 df = pd.read_csv(data_asset.path)
 
-print(df)
+# Set up Azure ML run
+run = Run.get_context()
+
+# Log parameters
+run.log("trainingdata", data_name)
+
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
-
-print(X)
-print(Y)
-
 
 model = utils.create_lstm_model()
 
 def fit_round(server_round: int) -> Dict:
     """Send round number to client"""
+    run.log("server_round", server_round)
     return {"server_round": server_round}
 
 def get_evaluate_fn(model):
@@ -56,9 +49,11 @@ def get_evaluate_fn(model):
         """Update the model to use the given parameters and return its score"""
         model.set_weights(parameters)
         loss, accuracy = model.evaluate(X, Y)
-        # Log metrics to MLflow
-        mlflow.log_metric("loss", loss)
-        mlflow.log_metric("accuracy", accuracy)
+
+        # Log metrics to Azure ML
+        run.log("loss", loss)
+        run.log("accuracy", accuracy)
+
         return loss, {"accuracy": accuracy}
 
     return evaluate
@@ -79,7 +74,7 @@ fl.server.start_server(server_address="0.0.0.0:8008",
                        config=fl.server.ServerConfig(num_rounds=25))
 
 # Get the current date and time
-current_datetime = datetime.now()
+current_datetime = datetime.datetime.now()
 
 # Format as a string
 formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
@@ -87,38 +82,40 @@ formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
 # Save the federated model after training
 save_model(model, "federated_model_{formatted_datetime}.h5")
 
+# Log the saved model as an artifact
+run.upload_file(name="outputs/federated_model_{formatted_datetime}.h5", path_or_stream="federated_model_{formatted_datetime}.h5")
 
+# Log the federated model to Azure ML
+run.log_artifact("federated_model_{formatted_datetime}.h5")
+model_path = run.get_file_names()["outputs/federated_model_{formatted_datetime}.h5"]
 
-# After saving the individual models
-mlflow.log_artifact(f"federated_model_{formatted_datetime}.h5")
-model_path = mlflow.get_artifact_uri(f"federated_model_{formatted_datetime}.h5")
-mlflow.register_model(model_path, f"federated_model_{formatted_datetime}")
+# Register the model in Azure ML
+azure_model = Model.register(workspace=ws,
+                                  model_name=f"federated_model_{formatted_datetime}",
+                                  model_path=model_path,
+                                  tags={"run_id": run.id, "experiment_name": run.experiment.name},
+                                  description="Federated Model registered from Flower training")
 
-model = Model.register(workspace=ws, model_path=model_path, model_name=f"federated_model_{formatted_datetime}")
+# Retrieve accuracy from Azure ML
+accuracy = run.get_metrics().get("accuracy", 0.0)
 
-
-# Retrieve accuracy from MLflow
-run = mlflow.get_run()
-accuracy = run.data.metrics.get("accuracy", 0.0)
-
-accuracy_threshold=0.8
-        # Deploy only if accuracy is greater than the threshold
+accuracy_threshold = 0.8
+# Deploy only if accuracy is greater than the threshold
 if accuracy > accuracy_threshold:
     # Define inference configuration
     inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file=environment)
 
-            # Deploy the model as a web service
+    # Deploy the model as a web service
     aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
-
 
     # Deploy the model as a web service
     service_name = f"{model.name.lower()}-service"
     service = Model.deploy(workspace=ws,
-                                    name=service_name,
-                                    models=[model],
-                                    inference_config=inference_config,
-                                    deployment_config=aciconfig)
+                           name=service_name,
+                           models=[model],
+                           inference_config=inference_config,
+                           deployment_config=aciconfig)
     service.wait_for_deployment(show_output=True)
 
-# End MLflow run
-mlflow.end_run()
+# End Azure ML run
+run.complete()
