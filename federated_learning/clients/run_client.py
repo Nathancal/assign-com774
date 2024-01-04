@@ -1,6 +1,5 @@
 import argparse
-from azureml.core import Workspace, Experiment, Run
-from azure.ai.ml.entities._assets.environment import Environment
+from azureml.core import Workspace, Experiment, Run, Environment
 from azure.ai.ml import Input
 from azure.ai.ml import MLClient
 from azure.ai.ml.constants import AssetTypes
@@ -46,7 +45,9 @@ ml_client = MLClient.from_config(credential=DefaultAzureCredential())
      
 
 environment = Environment.get(workspace=ws, name="development")
-
+# Get the environment name and version
+environment_name = environment.name
+environment_version = str(environment.version)
 
 # Get the current run context in an Azure ML job
 run = Run.get_context()
@@ -77,12 +78,12 @@ def submit_job(subject_num):
             "experiment_name": experiment.name
         }
 
-
+        # Define your job with the correct environment name and version
         job = command(
             code="./src",  # local path where the code is stored
             command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
             inputs=inputs,
-            environment="azureml:development:12",
+            environment=f"azureml:{environment_name}:{environment_version}",
             compute="compute-resources",
             identity=UserIdentityConfiguration(),
         )
