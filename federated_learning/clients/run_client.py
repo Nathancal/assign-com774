@@ -1,5 +1,5 @@
 import argparse
-import mlflow
+from mlflow.tracking import MlflowClient
 from azureml.core import Workspace, Experiment, Run, Environment
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
@@ -7,6 +7,8 @@ from concurrent.futures import ProcessPoolExecutor
 import logging
 from azureml.core.authentication import ServicePrincipalAuthentication
 import psutil
+import mlflow
+
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -40,12 +42,16 @@ svc_pr = ServicePrincipalAuthentication(
 
 # Connect to Azure ML workspace
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 
 
 mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
 
+azureml_tracking_uri = ml_client.workspaces.get(
+    ml_client.workspace_name
+).mlflow_tracking_uri
+mlflow.set_tracking_uri(azureml_tracking_uri)
 
-ml_client = MLClient.from_config(credential=DefaultAzureCredential())
      
 
 environment = Environment.get(workspace=ws, name="development")
