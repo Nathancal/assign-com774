@@ -60,7 +60,6 @@ run = Run.get_context()
 # Function to submit a job
 def submit_job(subject_num):
 
-        mlflow.autolog()
 
         try:
                 # Specify the name of the dataset
