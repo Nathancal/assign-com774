@@ -60,9 +60,6 @@ run = Run.get_context()
 # Function to submit a job
 def submit_job(subject_num):
 
-    with mlflow.start_run():
-        mlflow.log_param("total_subjects", args.total_subjects)
-
         try:
             # Specify the name of the dataset
             dataset_name = f"subject{subject_num + 1}"
@@ -136,9 +133,12 @@ def submit_job(subject_num):
             # Log exception to Azure ML
             mlflow.log_param("error_message", str(e))
 
-# Submit jobs in parallel
-with ProcessPoolExecutor() as executor:
-    executor.map(submit_job, range(args.total_subjects))
+with mlflow.start_run():
+        mlflow.log_param("total_subjects", args.total_subjects)
+        # Submit jobs in parallel
+        with ProcessPoolExecutor() as executor:
+    
+            executor.map(submit_job, range(args.total_subjects))
 
 # End Azure ML run
 run.complete()
