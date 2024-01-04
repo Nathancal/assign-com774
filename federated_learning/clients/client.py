@@ -33,11 +33,12 @@ svc_pr = ServicePrincipalAuthentication(
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
 
-mlflow.autolog()
 # Get the current run context in an Azure ML job
 run = Run.get_context()
 def client():
     try:
+        mlflow.autolog()
+
         # Initialize MLflow
         mlflow_location = "westeurope"
         subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
