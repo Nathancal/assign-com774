@@ -81,22 +81,28 @@ def submit_job(subject_num):
                 logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
             
             inputs = {
-                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
+                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path),
                 "experiment_name": experiment.name
             }
 
             # Define your job with the correct environment name and version
-            job = command(
-                code="./",  # local path where the code is stored
-                command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
-                inputs=inputs,
-                environment=f"azureml:{environment_name}:{environment_version}",
-                compute="compute-resources",
-                experiment_name=experiment_name,  # Pass the experiment name to your job
-            )
+            with mlflow.start_run(nested=True):
+                mlflow.command(
+                    uri="./",  # local path where the code is stored
+                    command=f"python client.py --data {inputs['input_data']} --experiment_name {inputs['experiment_name']}",
+                    parameters={},
+                    environment=f"azureml:{environment_name}:{environment_version}",
+                    compute="compute-resources",
+                    experiment_name=experiment_name,  # Pass the experiment name to your job
+                )
 
-            # Assuming ml_client is your MLClient instance
-            returned_job = ml_client.jobs.create_or_update(job)
+            # Log memory usage
+            memory_usage = psutil.virtual_memory().percent
+            mlflow.log_metric("memory_usage_percent", memory_usage)
+
+            # Log CPU usage
+            cpu_usage = psutil.cpu_percent()
+            mlflow.log_metric("cpu_usage_percent", cpu_usage)
 
                # Log memory usage
             memory_usage = psutil.virtual_memory().percent
