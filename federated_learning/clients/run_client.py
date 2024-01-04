@@ -80,7 +80,7 @@ def submit_job(subject_num):
 
         # Define your job with the correct environment name and version
         job = command(
-            code="./src",  # local path where the code is stored
+            code="./",  # local path where the code is stored
             command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
             inputs=inputs,
             environment=f"azureml:{environment_name}:{environment_version}",
