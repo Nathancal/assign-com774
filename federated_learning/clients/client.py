@@ -105,10 +105,10 @@ def client():
             # Connect to the server
             fl.client.start_client("40.68.31.180:8008", client=HARClient())
 
-        except Exception as e:
-            logger.error(f"Error in client script: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error in client script: {str(e)}")
             # Log exception to Azure ML
-            run.log("error_message", str(e))
+        run.log("error_message", str(e))
 
 if __name__ == "__main__":
     client()
