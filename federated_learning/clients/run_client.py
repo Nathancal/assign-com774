@@ -99,6 +99,8 @@ def submit_job(subject_num):
                 experiment_name=experiment_name,  # Pass the experiment name to your job
             )
 
+            # Assuming ml_client is your MLClient instance
+            returned_job = ml_client.jobs.create_or_update(job)
 
                # Log memory usage
             memory_usage = psutil.virtual_memory().percent
@@ -117,6 +119,9 @@ def submit_job(subject_num):
             mlflow.log_param("experiment_name", experiment_name)
             mlflow.log_param("run_id", run_id)
             mlflow.log_param("experiment_id", experiment.id)
+            
+            job_status = returned_job.get_status()
+            mlflow.log_param("job_status", job_status)
 
             # Wait for the run to complete
             mlflow.wait_for_completion()
