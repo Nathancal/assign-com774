@@ -9,6 +9,7 @@ from azureml.core import Workspace, Model
 from azureml.core.run import Run
 from deploy_model import deploy_azure_model
 import mlflow
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +21,7 @@ client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
 resource_group = "assignment2-b00903995"
 workspace_name = "assignment2-ML-workspace"
+custom_run_id = str(uuid.uuid4())
 
 # Authenticate using service principal credentials
 # Service principal authentication configuration
@@ -39,7 +41,7 @@ def client():
         # Initialize MLflow
         mlflow_location = "westeurope"
         subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
-        with mlflow.start_run(nested=True):
+        with mlflow.start_run(run_id=custom_run_id, nested=True):
 
             mlflow.log_param("total_subjects", args.total_subjects)
 

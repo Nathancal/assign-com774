@@ -43,101 +43,100 @@ svc_pr = ServicePrincipalAuthentication(
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 
 
+mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
+
+mlflow.autolog()
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
      
-mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
 
-with mlflow.start_run():
-    mlflow.log_param("total_subjects", args.total_subjects)
-        # Submit jobs in parallel
-    environment = Environment.get(workspace=ws, name="development")
-    # Get the environment name and version
-    environment_name = environment.name
-    environment_version = str(environment.version)
+environment = Environment.get(workspace=ws, name="development")
+# Get the environment name and version
+environment_name = environment.name
+environment_version = str(environment.version)
 
-    run = Run.get_context()
+run = Run.get_context()
 
-    # Function to submit a job
-    def submit_job(subject_num):
+# Function to submit a job
+def submit_job(subject_num):
 
-            try:
-                # Specify the name of the dataset
-                dataset_name = f"subject{subject_num + 1}"
+        try:
+            # Specify the name of the dataset
+            dataset_name = f"subject{subject_num + 1}"
 
-                data_asset = ml_client.data._get_latest_version(dataset_name)
+            data_asset = ml_client.data._get_latest_version(dataset_name)
 
-        
-                # Create a unique experiment name with timestamp
-                experiment_name = f"client_experiment_{subject_num + 1}"
+    
+            # Create a unique experiment name with timestamp
+            experiment_name = f"client_experiment_{subject_num + 1}"
 
-                # Check if the experiment already exists
-                if experiment_name not in ws.experiments:
-                    # If not, create a new experiment
-                    experiment = Experiment(workspace=ws, name=experiment_name)
-                    logger.info(f"Experiment {experiment_name} does not exist, will be created now.")
-                else:
-                    # If it exists, get the existing experiment
-                    experiment = ws.experiments[experiment_name]
-                    logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
-                
-                inputs = {
-                    "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
-                    "experiment_name": experiment.name
-                }
+            # Check if the experiment already exists
+            if experiment_name not in ws.experiments:
+                # If not, create a new experiment
+                experiment = Experiment(workspace=ws, name=experiment_name)
+                logger.info(f"Experiment {experiment_name} does not exist, will be created now.")
+            else:
+                # If it exists, get the existing experiment
+                experiment = ws.experiments[experiment_name]
+                logger.info(f"Experiment {experiment_name} already exists.., job being added there for client {data_asset}")
+            
+            inputs = {
+                "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path), 
+                "experiment_name": experiment.name
+            }
 
-                # Define your job with the correct environment name and version
-                job = command(
-                    code="./",  # local path where the code is stored
-                    command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
-                    inputs=inputs,
-                    environment=f"azureml:{environment_name}:{environment_version}",
-                    compute="compute-resources",
-                    experiment_name=experiment_name,  # Pass the experiment name to your job
-                )
+            # Define your job with the correct environment name and version
+            job = command(
+                code="./",  # local path where the code is stored
+                command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+                inputs=inputs,
+                environment=f"azureml:{environment_name}:{environment_version}",
+                compute="compute-resources",
+                experiment_name=experiment_name,  # Pass the experiment name to your job
+            )
 
-                # Assuming ml_client is your MLClient instance
-                returned_job = ml_client.jobs.create_or_update(job)
+            # Assuming ml_client is your MLClient instance
+            returned_job = ml_client.jobs.create_or_update(job)
 
-                # Log memory usage
-                memory_usage = psutil.virtual_memory().percent
-                mlflow.log_metric("memory_usage_percent", memory_usage)
+               # Log memory usage
+            memory_usage = psutil.virtual_memory().percent
+            mlflow.log_metric("memory_usage_percent", memory_usage)
 
-                # Log CPU usage
-                cpu_usage = psutil.cpu_percent()
-                mlflow.log_metric("cpu_usage_percent", cpu_usage)
-                # # Start the Azure ML run
-                # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
-                run_id = mlflow.active_run().info.run_id
-                logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
-                # submit the command
+            # Log CPU usage
+            cpu_usage = psutil.cpu_percent()
+            mlflow.log_metric("cpu_usage_percent", cpu_usage)
+            # # Start the Azure ML run
+            # run = experiment.submit(script_config, tags={"Subject": subject_num + 1})
+            run_id = mlflow.active_run().info.run_id
+            logger.info(f"Job for subject {subject_num + 1} submitted. Run ID: {run_id}")
+            # submit the command
 
-                mlflow.log_param("subject_num", subject_num + 1)
-                mlflow.log_param("experiment_name", experiment_name)
-                mlflow.log_param("run_id", run_id)
-                mlflow.log_param("experiment_id", experiment.id)
-                
-                job_status = returned_job.get_status()
-                mlflow.log_param("job_status", job_status)
+            mlflow.log_param("subject_num", subject_num + 1)
+            mlflow.log_param("experiment_name", experiment_name)
+            mlflow.log_param("run_id", run_id)
+            mlflow.log_param("experiment_id", experiment.id)
+            
+            job_status = returned_job.get_status()
+            mlflow.log_param("job_status", job_status)
 
-                # Wait for the run to complete
-                mlflow.wait_for_completion()
+            # Wait for the run to complete
+            mlflow.wait_for_completion()
 
-                # Log additional metrics
-                mlflow.log_metric("run_duration", run.get_metrics().get("DurationInSeconds"))
+            # Log additional metrics
+            mlflow.log_metric("run_duration", run.get_metrics().get("DurationInSeconds"))
 
-        
-                logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
+    
+            logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
-            except Exception as e:
-                logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
-                # Log exception to Azure ML
-                mlflow.log_param("error_message", str(e))
+        except Exception as e:
+            logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
+            # Log exception to Azure ML
+            mlflow.log_param("error_message", str(e))
 
+# Submit jobs in parallel
+with ProcessPoolExecutor() as executor:
+   
+    executor.map(submit_job, range(args.total_subjects))
 
-            with ProcessPoolExecutor() as executor:
-        
-                executor.map(submit_job, range(args.total_subjects))
-
-    # End Azure ML run
-    run.complete()
+# End Azure ML run
+run.complete()
