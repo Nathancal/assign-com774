@@ -1,6 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 code: .
-command: python run_client.py --total_subjects 9
+command: python run_client.py --total_subjects 4
 
 environment: azureml:development:15
 compute: azureml:Fed-Server-Instance
