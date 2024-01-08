@@ -114,7 +114,7 @@ def fit_round(server_round: int) -> Dict:
 
     return {"server_round": server_round}
 
-def get_evaluate_fn(model, experiment):
+def get_evaluate_fn(model):
 
     """Build an evaluation function for Flower to use to assess performance"""
     def evaluate(server_round: int, parameters:fl.server.history, config: Dict[str, fl.common.Scalar]):
@@ -168,11 +168,11 @@ def get_evaluate_fn(model, experiment):
     
     return evaluate
 
-def start_flower_server(experiment):
+def start_flower_server():
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
         min_available_clients=args.minimum_clients,
-        evaluate_fn=get_evaluate_fn(model, experiment),
+        evaluate_fn=get_evaluate_fn(model),
         on_fit_config_fn=fit_round,
     )
     

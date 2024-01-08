@@ -14,11 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-
-total_subject = os.environ.get("TOTAL_SUBJECTS")
-
-
-subject_num = total_subject
+    
 
 client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
@@ -61,10 +57,9 @@ run = Run.get_context()
 def start_server():
 
 
-
         try:
                 # Specify the name of the dataset
-            dataset_name = f"subject{subject_num + 1}"
+            dataset_name = f"subject2-4"
             # Check if the dataset follows the naming convention
             if dataset_name.startswith("subject"):
                 data_asset = ml_client.data._get_latest_version(dataset_name)
@@ -90,7 +85,7 @@ def start_server():
                     # Define your job with the correct environment name and version
                     job = command(
                         code="./",  # local path where the code is stored
-                        command="python server.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+                        command="python server.py --training_data ${{inputs.input_data}} --minimum_clients 3",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
                         compute="job-run-compute",
@@ -116,3 +111,7 @@ def start_server():
             logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
                 # Log exception to Azure ML
             mlflow.log_param("error_message", str(e))
+
+# Start Flower server for 10 rounds of federated learning
+if __name__ == "__main__":
+    start_server()
