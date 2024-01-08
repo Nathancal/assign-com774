@@ -1,8 +1,8 @@
-flwr==1.6.0
-pandas==2.1.4
-numpy==1.26.2
+flwr
+pandas
+numpy
 keras
-scikit-learn==1.3.2
+scikit-learn
 tensorflow
 azure-ai-ml
 azure-identity
@@ -10,9 +10,9 @@ fsspec
 azureml-fsspec
 azureml-mlflow
 mltable
-azureml==0.2.7
+azureml
 azureml-core
-mlflow==2.9.2
+mlflow
 azureml-sdk
 joblib
 pytest
