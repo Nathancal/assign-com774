@@ -92,7 +92,7 @@ def submit_job(subject_num):
                         command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
-                        compute="Fed-Server-Instance",
+                        compute="fed-server-run",
                         experiment_name=experiment_name,  # Pass the experiment name to your job
                     )
 
