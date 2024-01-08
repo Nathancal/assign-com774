@@ -93,7 +93,7 @@ def start_server():
                         command="python server.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
-                        compute="job-cluster",
+                        compute="job-run-compute",
                         experiment_name=experiment_name,  # Pass the experiment name to your job
                     )
 

@@ -2,6 +2,6 @@ $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 code: .
 command: python start_server.py
 environment: azureml:development:15
-compute: azureml:job-cluster
+compute: azureml:job-run-compute
 experiment_name: Fed-Learning-Server-Experiment
 description: This job is for deploying and running the federated learning server in the dev environment....
