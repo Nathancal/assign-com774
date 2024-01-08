@@ -60,16 +60,10 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-            az login --identity --allow-no-subscriptions
-            az extension add --name acr
-            az extension add --name ml
-            # Change to the specified directory
-            cd ~/cloudfiles/code/users/callaghan-n7/test_code/server
-
-            # Run Python files
-            python server.py --training_data subject2-4 minimum_clients 3
-            cd ~/cloudfiles/code/users/callaghan-n7/test_code/clients
-            python run_client.py --total_subjects 4
+          az login --identity --allow-no-subscriptions
+          docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+          docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
+          docker container ls -a
     - name: Add ML Extension
       run: az extension add --name ml
     # - name: Start Run Clients
