@@ -16,3 +16,4 @@ mlflow==2.9.2
 azureml-sdk
 joblib
 pytest
+
