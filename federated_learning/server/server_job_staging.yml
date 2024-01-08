@@ -1,6 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 code: .
-command: python server.py --trainingdata ${{ inputs.training_data }}
+command: python server.py --trainingdata ${{ inputs.training_data }} minimum_clients 3
 inputs:
   training_data:
     type: uri_file

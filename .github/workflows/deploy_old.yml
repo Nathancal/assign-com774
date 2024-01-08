@@ -66,7 +66,10 @@ jobs:
           docker container ls -a
     - name: Add ML Extension
       run: az extension add --name ml
-    # - name: Start Run Clients
-    #   run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+    
+    - name: Start Run Server
+      run: az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+    - name: Start Run Clients
+      run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
     - name: Test azure login by getting details
       run: az account show
