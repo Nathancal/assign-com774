@@ -1,27 +1,45 @@
-import json
+import os
 import numpy as np
-import pandas as pd
 from keras.models import load_model
 from azureml.core.model import Model
+from azureml.contrib.services.aml_request import AMLRequest, rawhttp
+from azureml.contrib.services.aml_response import AMLResponse
+import json
+from sklearn.preprocessing import LabelEncoder
 
-# Initialize the model when the web service starts
+
 def init():
     global model
-    model_path = Model.get_model_path(model_name=)
+    
+    model_name = os.getenv("MODEL_NAME")
+    # Load the model from the Azure ML workspace
+    model_path = Model.get_model_path(model_name=model_name)
     model = load_model(model_path)
 
-# Perform inference when a request is received
-def run(raw_data):
+@rawhttp
+def run(request):
     try:
-        # Assuming raw_data is the path to a CSV file
-        data = pd.read_csv(raw_data)
-        
-        # Make predictions using the loaded model
-        predictions = model.predict(data)
+        data = json.loads(request.get_data())
+        input_data = data["input_data"]
+        # Your list of classes
+        class_names = ['Running', 'Sitting', 'Standing', 'Walking', 'downstairs', 'upstairs']
 
-        # You can customize the output format based on your model
-        return {"predictions": predictions.tolist()}
+        # Initialize the LabelEncoder
+        encoder = LabelEncoder()
+
+        # Fit the encoder to your classes and transform them to numerical labels
+        encoded_labels = encoder.fit_transform(class_names)
+
+        prediction = np.argmax(model.predict(input_data), axis=1)
+        predicted_class_names = encoder.inverse_transform(prediction)
+
+
+        # Convert the prediction to a string (you can modify this based on your model output)
+        result = predicted_class_names
+
+        # Return the result
+        return AMLResponse(result, 200)
 
     except Exception as e:
-        error = str(e)
-        return {"error": error}
+        error_msg = f"Error during inference: {str(e)}"
+        return AMLResponse(error_msg, 500)

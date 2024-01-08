@@ -1,1 +1,3 @@
 /venv/
+/mlruns/
+federated_learning/server/mlruns

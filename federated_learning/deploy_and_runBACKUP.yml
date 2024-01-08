@@ -1,0 +1,48 @@
+name: Deploy to Azure ML And Start Federated Learning
+on:
+    push:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/server/**'
+    pull_request:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/server/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Log in to Azure Container Registry
+      env:
+        ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
+        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      run: |
+        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+
+    - name: List images in ACR
+      run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+
+    - name: SSH into Azure ML Compute Instance
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.COMPUTE_INSTANCE_IP }}
+        username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
+        key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
+        port: 50000
+        script: |
+            az login --identity --allow-no-subscriptions
+            docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
+            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata combined_data_sub1-9
+            docker container ls -a

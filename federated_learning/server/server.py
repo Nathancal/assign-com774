@@ -5,11 +5,44 @@ import pandas as pd
 import argparse
 from azure.ai.ml import MLClient
 from azure.identity import DefaultAzureCredential
-from azureml.core import Workspace,  Environment, Run
-from azureml.core.webservice import AciWebservice
-from azureml.core.model import InferenceConfig, Model
+from azureml.core import Workspace, Environment
 from keras.models import save_model
 import datetime
+import threading
+import mlflow 
+from sklearn.model_selection import train_test_split
+import logging
+from azureml.core.authentication import ServicePrincipalAuthentication
+import argparse
+from azure.ai.ml import MLClient
+from azure.identity import DefaultAzureCredential
+from azureml.core.webservice import AciWebservice, AksWebservice, Webservice
+from azureml.core import Workspace, Model
+from azureml.core.run import Run
+import mlflow
+import time
+
+import pandas as pd
+from azureml.core.run import Run
+from datetime import datetime, timedelta, timezone
+from azure.ai.ml.entities import (
+    AzureMLOnlineInferencingServer,
+    ModelPackage,
+    CodeConfiguration,
+    BaseEnvironment,
+)
+from azure.ai.ml.entities import (
+    ManagedOnlineEndpoint,
+    ManagedOnlineDeployment,
+    Environment,
+    Model,
+)
+from azureml.core import Environment
+from azureml.core.model import  Model
+import random
+import string
+import uuid
+
 
 # Load Azure Machine Learning workspace from configuration file
 ws = Workspace.from_config(path='./config.json')
@@ -18,104 +51,214 @@ environment = Environment.get(workspace=ws, name="development")
 # Get the arguments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
 parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
+parser.add_argument("--minimumclients", type=int, required=True, help='Training data for model server')
 args = parser.parse_args()
 
-data_name = args.trainingdata
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
-data_asset = ml_client.data.get("combined_data_sub1-9", version="1")
-
-df = pd.read_csv(data_asset.path)
-
-# Set up Azure ML run
-run = Run.get_context()
-
-# Log parameters
-run.log("trainingdata", data_name)
+data_asset = ml_client.data._get_latest_version(args.trainingdata)
 
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
 
+mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
+mlflow.autolog()
+run = Run.get_context()
+last_round_flag = threading.Event()
+
+num_rounds = 4
 model = utils.create_lstm_model()
 
+def generate_8_digit_uuid():
+    # Generate a UUID and take the last 8 characters
+        
+    generated_uuid = str(uuid.uuid4().hex)[-8:]
+
+    return generated_uuid
+
+        
 def fit_round(server_round: int) -> Dict:
+
     """Send round number to client"""
-    run.log("server_round", server_round)
     return {"server_round": server_round}
 
 def get_evaluate_fn(model):
+
     """Build an evaluation function for Flower to use to assess performance"""
     def evaluate(server_round: int, parameters:fl.server.history, config: Dict[str, fl.common.Scalar]):
+        
         """Update the model to use the given parameters and return its score"""
         model.set_weights(parameters)
         loss, accuracy = model.evaluate(X, Y)
 
-        # Log metrics to Azure ML
-        run.log("loss", loss)
-        run.log("accuracy", accuracy)
+        with mlflow.start_run():
+            mlflow.log_param("server_round", server_round)
 
+            logger.info("server_round" + str(server_round))
+            # Log accuracy and loss as metrics
+            mlflow.log_metric('accuracy', accuracy)
+            mlflow.log_metric('loss', loss)
+
+            current_datetime = datetime.now()
+
+                    # Format as a string
+            formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
+                    
+                    # Save the model after training
+            model.save(f"outputs/Federated_Model_{formatted_datetime}_model.h5")
+
+                    # Construct the model path based on the relative path within the outputs directory
+            model_path_relative = f"outputs/Federated_Model_{formatted_datetime}_model.h5"
+            
+            accuracy_publish_threshold = 0.4
+                    # Deploy only if accuracy is greater than the threshold
+            if accuracy > accuracy_publish_threshold:
+                        # Log the saved model as an artifact
+                run.upload_file(name=model_path_relative, path_or_stream=model_path_relative)
+                exp_name = "Federated-server-mdl-" + "acc-"+"{:.2f}".format(accuracy).split(".")[1]
+                formatted_datetime
+
+                logger.info("RUN-ID: " +run.id)
+                        
+                model_name=exp_name+"-"+formatted_datetime
+                        # Register the model in Azure ML
+                azure_model = Model.register(workspace=ws,
+                    model_name=model_name,
+                    model_path=model_path_relative,
+                    tags={"run_id": run.id, "experiment_name": "Federated-Server-Model", "accuracy": accuracy},
+                    description=f"Federated Model registered from Flower training, Accuracy: {accuracy}"
+                )   
+
+                if server_round == num_rounds:
+                    deploy_models()   
+        mlflow.end_run()
         return loss, {"accuracy": accuracy}
-
+    
     return evaluate
 
-# Set initial LSTM parameters
-utils.set_initial_lstm_params(model)
+def start_flower_server():
+    # Set up a FedAvg strategy using the functions above expecting 2 clients
+    strategy = fl.server.strategy.FedAvg(
+        min_available_clients=args.minimumclients,
+        evaluate_fn=get_evaluate_fn(model),
+        on_fit_config_fn=fit_round,
+    )
+    
 
-# Set up a FedAvg strategy using the functions above expecting 2 clients
-strategy = fl.server.strategy.FedAvg(
-    min_available_clients=9,
-    evaluate_fn=get_evaluate_fn(model),
-    on_fit_config_fn=fit_round,
-)
+  # Define a lambda function to start the Flower server
+    server = fl.server.start_server(
+        server_address="0.0.0.0:8008",
+        strategy=strategy,
+        config=fl.server.ServerConfig(num_rounds=num_rounds),
+    )
+    
+def deploy_models():
 
-# Start the Flower server with the strategy for 10 runs
-fl.server.start_server(server_address="0.0.0.0:8008",
-                       strategy=strategy,
-                       config=fl.server.ServerConfig(num_rounds=25))
+        # Get a list of all registered models
+    all_models = Model.list(workspace=ws)
 
-# Get the current date and time
-current_datetime = datetime.datetime.now()
+    # Set the threshold for accuracy
+    accuracy_threshold = 0.5
+    name ="Federated"
+    # Filter models based on the accuracy threshold and timestamp
+    filtered_models = [
+        model
+        for model in all_models
+        if (
+            "accuracy" in model.tags
+            and float(model.tags["accuracy"]) > accuracy_threshold
+            and model.created_time >= (datetime.now(timezone.utc) - timedelta(minutes=15))  # Change the time window as needed
+            and name in model.name 
+        )
+    ]
 
-# Format as a string
-formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
+    # Get the model with the highest accuracy among the filtered models
+    recent_high_accuracy_models = sorted(
+        filtered_models, key=lambda x: float(x.tags["accuracy"]), reverse=True
+    )
 
-# Save the federated model after training
-save_model(model, "federated_model_{formatted_datetime}.h5")
+    if recent_high_accuracy_models:
 
-# Log the saved model as an artifact
-run.upload_file(name="outputs/federated_model_{formatted_datetime}.h5", path_or_stream="federated_model_{formatted_datetime}.h5")
+        highest_accuracy_model = recent_high_accuracy_models[0]
 
-# Log the federated model to Azure ML
-run.log_artifact("federated_model_{formatted_datetime}.h5")
-model_path = run.get_file_names()["outputs/federated_model_{formatted_datetime}.h5"]
+        environment = Environment.get(workspace=ws, name="infer-env")
 
-# Register the model in Azure ML
-azure_model = Model.register(workspace=ws,
-                                  model_name=f"federated_model_{formatted_datetime}",
-                                  model_path=model_path,
-                                  tags={"run_id": run.id, "experiment_name": run.experiment.name},
-                                  description="Federated Model registered from Flower training")
+        logger.info("ENVIRONMENT: " + environment.name)
+        modelLoad = ml_client.models.get(name=highest_accuracy_model.name, label="latest")
 
-# Retrieve accuracy from Azure ML
-accuracy = run.get_metrics().get("accuracy", 0.0)
+        logger.info("WSURI: " + ws.get_mlflow_tracking_uri())
 
-accuracy_threshold = 0.8
-# Deploy only if accuracy is greater than the threshold
-if accuracy > accuracy_threshold:
-    # Define inference configuration
-    inference_config = InferenceConfig(entry_script="score.py", runtime="python", conda_file=environment)
+        logger.info("MODEL NAME: " + highest_accuracy_model.name)
+        
+      
 
-    # Deploy the model as a web service
-    aciconfig = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
+        pakage_config = ModelPackage(
+            target_environment=f"{highest_accuracy_model.name}-env-pkg",
+            base_environment_source=BaseEnvironment(
+                type="asset",
+                resource_id="azureml:infer-env:4"
+            ),
+            inferencing_server=AzureMLOnlineInferencingServer(
+                code_configuration=CodeConfiguration(code="./", scoring_script="score.py")
+            ),
+            tags={"run_id": highest_accuracy_model.tags["run_id"], "model": highest_accuracy_model.name},
+        )
 
-    # Deploy the model as a web service
-    service_name = f"{model.name.lower()}-service"
-    service = Model.deploy(workspace=ws,
-                           name=service_name,
-                           models=[model],
-                           inference_config=inference_config,
-                           deployment_config=aciconfig)
-    service.wait_for_deployment(show_output=True)
+        model_package = ml_client.models.package(highest_accuracy_model.name, modelLoad.version, pakage_config)
+        
+        eight_digit_uuid = generate_8_digit_uuid()
 
-# End Azure ML run
-run.complete()
+        endpoint = ManagedOnlineEndpoint(name="fed-model-endp"+eight_digit_uuid)
+        endpoint = ml_client.online_endpoints.begin_create_or_update(endpoint).result()
+        logger.info("ENDPOINT:" + endpoint.name)
+
+        deployment_package = ManagedOnlineDeployment(
+            name=endpoint.name,
+            endpoint_name=endpoint.name,
+            environment=model_package,
+            instance_type="Standard_D4as_v4",
+            instance_count=1,
+            environment_variables={'MODEL_NAME': highest_accuracy_model.name},
+            # pass environment variables to the score.py
+            tags={"run_id": highest_accuracy_model.tags["run_id"], "experiment_name": highest_accuracy_model.tags["experiment_name"], "model": highest_accuracy_model.name},
+        )
+
+        logger.info("MODEL DEPLOYMENT: " + deployment_package.endpoint_name)
+
+        max_retries = 3
+        retries = 0
+
+        while retries < max_retries:
+            try:
+                deploy_result = ml_client.online_deployments.begin_create_or_update(deployment_package).result()
+                logger.info(deploy_result)
+                break
+            except Exception as e:
+                logger.error(f"Error during deployment: {str(e)}")
+                retries += 1
+                time.sleep(5)  # Add a delay before retrying
+
+        if retries == max_retries:
+            logger.error("Maximum retries reached. Deployment failed.")
+
+
+# Start Flower server for 10 rounds of federated learning
+if __name__ == "__main__":
+    utils.set_initial_lstm_params(model)
+    # Set up a FedAvg strategy using the functions above expecting 2 clients
+    strategy = fl.server.strategy.FedAvg(
+        min_available_clients=args.minimumclients,
+        evaluate_fn=get_evaluate_fn(model),
+        on_fit_config_fn=fit_round,
+    )
+    # Start the Flower server with the strategy for 10 runs
+    start_flower_server()
+
+
+   
+    

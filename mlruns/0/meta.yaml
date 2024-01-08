@@ -1,6 +1,7 @@
 artifact_location: file:///E:/Masters-Year2/IntelligenceEngineering/assignment/src/mlruns/0
 creation_time: 1703075633397
 experiment_id: '0'
-last_update_time: 1703075633397
+last_update_time: 1704561641272
 lifecycle_stage: active
-name: Default
+name: XX
+tags: {}
