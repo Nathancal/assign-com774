@@ -50,11 +50,11 @@ import os
 # Get the arguments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--training_data", type=str, required=True, help='Path to the dataset')
-parser.add_argument("--minimum_clients", type=int, required=True, help='experiment name')
+training_data = os.environ.get("TRAINING_DATA")
+minimum_clients = os.environ.get("MINIMUM_CLIENTS")
 
 # Convert minimum_clients to an integer
-args = parser.parse_args()
+minimum_clients = int(minimum_clients)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ mlflow.autolog()
 environment = Environment.get(workspace=ws, name="development")
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
-data_asset = ml_client.data._get_latest_version(args.training_data)
+data_asset = ml_client.data._get_latest_version(training_data)
 
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
@@ -185,7 +185,7 @@ def get_evaluate_fn(model, experiment):
 def start_flower_server(experiment):
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=args.minimum_clients,
+        min_available_clients=minimum_clients,
         evaluate_fn=get_evaluate_fn(model, experiment),
         on_fit_config_fn=fit_round,
     )
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     utils.set_initial_lstm_params(model)
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=args.minimum_clients,
+        min_available_clients=minimum_clients,
         evaluate_fn=get_evaluate_fn(model),
         on_fit_config_fn=fit_round,
     )

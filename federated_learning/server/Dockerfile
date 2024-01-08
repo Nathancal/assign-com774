@@ -19,6 +19,8 @@ EXPOSE 8080
 
 # Define environment variable
 ENV NAME World
+ENV TRAINING_DATA=subject2-4
+ENV MINIMUM_CLIENTS=3
 
 # Run server.py when the container launches
 CMD ["python", "server.py", "--trainingdata", "${TRAINING_DATA}", "--minimumclients", "${MINIMUM_CLIENTS}"]
