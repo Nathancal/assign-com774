@@ -25,4 +25,4 @@ ENV AZURE_TENANT_ID=6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8
 
 
 # Run server.py when the container launches
-CMD ["python", "./server.py"]
+CMD ["python", "app.py", "--trainingdata", "${TRAINING_DATA}", "--minimumclients", "${MINIMUM_CLIENTS}"]
