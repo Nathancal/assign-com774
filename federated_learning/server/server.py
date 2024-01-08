@@ -117,8 +117,16 @@ def generate_8_digit_uuid():
         
 def fit_round(server_round: int) -> Dict:
 
-    """Send round number to client"""
-    return {"server_round": server_round}
+    # Define a fixed factor to decrease the learning rate
+    learning_rate_decay_factor = 0.98
+
+    # Update the learning rate based on the round
+    new_learning_rate = model.optimizer.lr * learning_rate_decay_factor
+    model.optimizer.lr = new_learning_rate
+
+    # Send round number to client
+    config = {"learning_rate": new_learning_rate}
+    return {"server_round": server_round, "config": config}
 
 def get_evaluate_fn(model, experiment):
 
