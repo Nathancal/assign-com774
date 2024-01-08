@@ -17,7 +17,21 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Add any dependencies you have
+
+    - name: Run pytest
+      run: |
+        pytest
+        
     - name: Setup Azure CLI
       uses: azure/login@v1
       with:
@@ -30,7 +44,7 @@ jobs:
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       run: |
         echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
-        
+
     - name: Add ML Extension
       run: az extension add --name ml
 
