@@ -55,13 +55,16 @@ args = parser.parse_args()
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Replace with your actual values
-tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
 client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+# Replace with your actual values
+tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
 resource_group = "assignment2-b00903995"
 workspace_name = "assignment2-ML-workspace"
+mlflow_location = "westeurope"
+subscription_id = "092da66a-c312-4a87-8859-56031bb22656"
+
+
 
 # Authenticate using service principal credentials
 # Service principal authentication configuration
@@ -71,9 +74,14 @@ svc_pr = ServicePrincipalAuthentication(
     service_principal_id="1bee10b2-17dd-4a50-b8aa-488d27bdd5a1",
     service_principal_password=svc_pr_password
 )
-# Load your Azure ML workspace
+
+# Connect to Azure ML workspace
 ws = Workspace.from_config(auth=svc_pr, path='./config.json')
 
+
+mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
+
+mlflow.autolog()     
 
 environment = Environment.get(workspace=ws, name="development")
 
@@ -83,8 +91,6 @@ data_asset = ml_client.data._get_latest_version(args.trainingdata)
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
 
-mlflow.set_tracking_uri(ws.get_mlflow_tracking_uri())
-mlflow.autolog()
 run = Run.get_context()
 last_round_flag = threading.Event()
 
