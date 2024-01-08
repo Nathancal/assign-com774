@@ -22,4 +22,4 @@ ENV NAME World
 ENV TOTAL_SUBJECTS=4
 
 # Run server.py when the container launches
-CMD ["python", "run_client.py", "--trainingdata", "${TRAINING_DATA}", "--minimumclients", "${MINIMUM_CLIENTS}"]
+CMD ["python", "run_client.py"]
