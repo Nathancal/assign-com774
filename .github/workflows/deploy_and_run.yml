@@ -15,9 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
+    - name: Clone repository code
+      uses: actions/checkout@v4
+    - run: echo "Repository cloned, I think I'm ready. The files look like this:"
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
