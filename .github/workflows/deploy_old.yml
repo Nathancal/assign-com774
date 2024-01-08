@@ -60,13 +60,16 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-          az account show
           cd ~/cloudfiles/code/users/callaghan-n7/test_code/server
           ls
           python server.py --training_data subject2-4 --minimum_clients 3
           cd ~/cloudfiles/code/users/callaghan-n7/test_code/clients
           ls
           python run_client.py --total_subjects 4
+        timeout: 30s
+        command_timeout: 10m
+        proxy_port: 22
+        proxy_timeout: 30s
     - name: Add ML Extension
       run: az extension add --name ml
     
