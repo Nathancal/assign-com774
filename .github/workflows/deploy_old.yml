@@ -23,6 +23,20 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Add any dependencies you have
+
+    - name: Run pytest
+      run: |
+          pytest
+
     - name: Log in to Azure Container Registry
       env:
         ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
@@ -48,7 +62,7 @@ jobs:
         script: |
             az login --identity --allow-no-subscriptions
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata subject2-4 --minimunmclients 3
+            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build --trainingdata subject2-4 --minimunmclients 3
             docker container ls -a
     - name: Add ML Extension
       run: az extension add --name ml
