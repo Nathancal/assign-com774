@@ -48,7 +48,7 @@ jobs:
         script: |
             az login --identity --allow-no-subscriptions
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-            docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata subject2-4 --minimunmclients 3
+            docker run -d -p 8080:80 -e "TRAINING_DATA=subject2-4" -e "MINIMUM_CLIENTS=4" --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata subject2-4 --minimunmclients 3
             docker container ls -a
     - name: Add ML Extension
       run: az extension add --name ml
