@@ -1,62 +1,60 @@
-# name: Deploy to Azure ML And Start Federated Learning
-# on:
-#     push:
-#       branches:
-#         - "staging"
-#       paths:
-#         - 'federated_learning/**'
-#     pull_request:
-#       branches:
-#         - "staging"
-#       paths:
-#         - 'federated_learning/server/**'
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+name: Deploy to Azure ML And Start Federated Learning
+on:
+    push:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/**'
+    pull_request:
+      branches:
+        - "staging"
+      paths:
+        - 'federated_learning/server/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - name: Clone repository code
-#       uses: actions/checkout@v4
-#     - run: echo "Repository cloned, I think I'm ready. The files look like this:"
+    steps:
+    - name: Clone repository code
+      uses: actions/checkout@v4
+    - run: echo "Repository cloned, I think I'm ready. The files look like this:"
 
-#     - name: Set up Python
-#       uses: actions/setup-python@v2
-#       with:
-#         python-version: 3.9
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
 
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         pip install -r requirements.txt  # Add any dependencies you have
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Add any dependencies you have
 
-#     - name: Run pytest
-#       run: |
-#         pytest
+    - name: Run pytest
+      run: |
+        pytest
         
-#     - name: Setup Azure CLI
-#       uses: azure/login@v1
-#       with:
-#         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Setup Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-#     - name: Log in to Azure Container Registry
-#       env:
-#         ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
-#         ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-#         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-#       run: |
-#         echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+    - name: Log in to Azure Container Registry
+      env:
+        ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
+        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      run: |
+        echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
     
-#     - name: SSH into Azure ML Compute Instance
-#       uses: appleboy/ssh-action@master
-#       with:
-#           host: ${{ secrets.COMPUTE_INSTANCE_IP }}
-#           username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
-#           key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
-#           port: 50000
-#           script: |
-#               az login --identity --allow-no-subscriptions
-#               az extension add --name ml
-#               az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
-
-#     - name: Start Run Clients
-#       run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+    - name: SSH into Azure ML Compute Instance
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.COMPUTE_INSTANCE_IP }}
+          username: ${{ secrets.COMPUTE_INSTANCE_USERNAME }}
+          key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
+          port: 50000
+          script: |
+              az login --identity --allow-no-subscriptions
+              az extension add --name ml
+              az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+              az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
