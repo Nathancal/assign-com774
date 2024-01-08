@@ -65,7 +65,3 @@ jobs:
             docker container ls -a
     - name: Add ML Extension
       run: az extension add --name ml
-    - name: Start Run Clients
-      run: 
-    - name: Test azure login by getting details
-      run: az account show
