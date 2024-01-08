@@ -47,10 +47,9 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-    # - name: Build and Push Docker Image
-    #   run: |
-    #       docker build -t ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build ./federated_learning/server
-    #       docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
+    - name: Build and Push Docker Image
+      run: |
+          docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
 
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
@@ -61,7 +60,7 @@ jobs:
         port: 50000
         script: |
             az login --identity --allow-no-subscriptions
-            docker login -u nathanc1994@icloud.com  -p ncallaghan17
+            az extension add --name acr
             docker pull d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
             docker run -d -p 8080:80 -e TRAINING_DATA="subject2-4" -e MINIMUM_CLIENTS=3 your-image-name --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker container ls -a
