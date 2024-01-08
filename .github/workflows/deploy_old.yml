@@ -47,10 +47,10 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-    - name: Build and Push Docker Image
-      run: |
-          docker build -t ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build ./federated_learning/server
-          docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
+    # - name: Build and Push Docker Image
+    #   run: |
+    #       docker build -t ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build ./federated_learning/server
+    #       docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
 
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
