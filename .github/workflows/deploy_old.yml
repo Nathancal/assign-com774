@@ -50,10 +50,11 @@ jobs:
             docker pull ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker run -d -p 8080:80 --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build python server.py --trainingdata subject2-4 --minimunmclients 3
             docker container ls -a
+            az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
     - name: Add ML Extension
       run: az extension add --name ml
       
     - name: Start Run Clients
-      run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+      run: 
     - name: Test azure login by getting details
       run: az account show
