@@ -45,8 +45,6 @@ import uuid
 
 
 # Load Azure Machine Learning workspace from configuration file
-ws = Workspace.from_config(path='./config.json')
-environment = Environment.get(workspace=ws, name="development")
 
 # Get the arguments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
@@ -58,7 +56,26 @@ args = parser.parse_args()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Replace with your actual values
+tenant_id = "6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8"
+client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
+client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+resource_group = "assignment2-b00903995"
+workspace_name = "assignment2-ML-workspace"
 
+# Authenticate using service principal credentials
+# Service principal authentication configuration
+svc_pr_password = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
+svc_pr = ServicePrincipalAuthentication(
+    tenant_id="6f0b9487-4fa8-42a8-aeb4-bf2e2c22d4e8",
+    service_principal_id="1bee10b2-17dd-4a50-b8aa-488d27bdd5a1",
+    service_principal_password=svc_pr_password
+)
+# Load your Azure ML workspace
+ws = Workspace.from_config(auth=svc_pr, path='./config.json')
+
+
+environment = Environment.get(workspace=ws, name="development")
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
 data_asset = ml_client.data._get_latest_version(args.trainingdata)
