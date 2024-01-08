@@ -23,18 +23,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
-    - name: Docker Build and Push
-        uses: docker/build-push-action@v2
-        with:
-          context: ./path/to/your/subdirectory  # Path to your Dockerfile and build context
-          push: true
-          tags: |
-            your-docker-registry/your-repo-name:latest
-            your-docker-registry/your-repo-name:${{ github.sha }}
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-    
     - name: Log in to Azure Container Registry
       env:
         ACR_NAME: d208efad40c54644a94f9c0ee8d073c6
@@ -45,6 +33,10 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+    - name: Build and Push Docker Image
+      run: |
+          docker build -t d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build .
+          docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
 
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
