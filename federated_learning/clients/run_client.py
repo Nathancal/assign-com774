@@ -8,16 +8,17 @@ from concurrent.futures import ProcessPoolExecutor
 import logging
 from azureml.core.authentication import ServicePrincipalAuthentication
 import psutil
-
+import os
 # Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--total_subjects", type=int, required=True, help='Subject number')
-args = parser.parse_args()
 
-subject_num = args.total_subjects
+total_subject = os.environ.get("TOTAL_SUBJECTS")
+
+
+subject_num = total_subject
 
 client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
