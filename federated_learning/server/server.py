@@ -47,14 +47,15 @@ import os
 
 # Load Azure Machine Learning workspace from configuration file
 
-# Get the arguments we need to avoid fixing the dataset path in code
+# Get the arguments we need to avoid fixin
 parser = argparse.ArgumentParser()
+# Get the arugments we need to avoid fixing the dataset path in code
+parser = argparse.ArgumentParser()
+parser.add_argument("--training_data", type=str, required=True, help='Training data for model server')
+parser.add_argument("--minimum_clients", type=int, required=True, help='Training data for model server')
+args = parser.parse_args()
 
-training_data = os.environ.get("TRAINING_DATA")
-minimum_clients = os.environ.get("MINIMUM_CLIENTS")
-
-# Convert minimum_clients to an integer
-minimum_clients = int(minimum_clients)
+data_name = args.trainingdata
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ mlflow.autolog()
 environment = Environment.get(workspace=ws, name="development")
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
-data_asset = ml_client.data._get_latest_version(training_data)
+data_asset = ml_client.data._get_latest_version(args.training_data)
 
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
@@ -100,13 +101,6 @@ last_round_flag = threading.Event()
 num_rounds = 4
 model = utils.create_lstm_model()
 
-# Define experiment name
-experiment_name = "Fed-Learning-Server-Staging-Env"
-
-# Get an existing experiment or create a new one
-experiment = Experiment(workspace=ws, name=experiment_name)
-
-mlflow.set_experiment(experiment)
 def generate_8_digit_uuid():
     # Generate a UUID and take the last 8 characters
         
@@ -117,16 +111,8 @@ def generate_8_digit_uuid():
         
 def fit_round(server_round: int) -> Dict:
 
-    # Define a fixed factor to decrease the learning rate
-    learning_rate_decay_factor = 0.98
 
-    # Update the learning rate based on the round
-    new_learning_rate = model.optimizer.lr * learning_rate_decay_factor
-    model.optimizer.lr = new_learning_rate
-
-    # Send round number to client
-    config = {"learning_rate": new_learning_rate}
-    return {"server_round": server_round, "config": config}
+    return {"server_round": server_round}
 
 def get_evaluate_fn(model, experiment):
 
@@ -185,7 +171,7 @@ def get_evaluate_fn(model, experiment):
 def start_flower_server(experiment):
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=minimum_clients,
+        min_available_clients=args.minimum_clients,
         evaluate_fn=get_evaluate_fn(model, experiment),
         on_fit_config_fn=fit_round,
     )
@@ -293,7 +279,7 @@ if __name__ == "__main__":
     utils.set_initial_lstm_params(model)
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=minimum_clients,
+        min_available_clients=args.minimum_clients,
         evaluate_fn=get_evaluate_fn(model),
         on_fit_config_fn=fit_round,
     )

@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--total_subjects", type=int, required=True, help='Training data for model server')
-args = parser.parse_args()
+total_subject = os.environ.get("TOTAL_SUBJECTS")
 
-subject_num = args.total_subjects
+
+subject_num = total_subject
 
 client_id = "3ce68579-31fd-417f-9037-97a114f15e9d"
 client_secret = "MZK8Q~M5oNATdagyRKMUs-V-2dNggq3aAlRRdb8W"
@@ -58,8 +58,8 @@ environment_version = str(environment.version)
 
 run = Run.get_context()
 
-# Function to submit a job
-def submit_job(subject_num):
+def start_server():
+
 
 
         try:
@@ -70,7 +70,7 @@ def submit_job(subject_num):
                 data_asset = ml_client.data._get_latest_version(dataset_name)
 
                 # Create a unique experiment name with timestamp
-                experiment_name = f"client_experiment_{subject_num + 1}"
+                experiment_name = f"Fed-Learning-Server-Staging-Env"
 
                 # Check if the experiment already exists
                 if experiment_name not in ws.experiments:
@@ -90,10 +90,10 @@ def submit_job(subject_num):
                     # Define your job with the correct environment name and version
                     job = command(
                         code="./",  # local path where the code is stored
-                        command="python client.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
+                        command="python server.py --data ${{inputs.input_data}} --experiment_name ${{inputs.experiment_name}}",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
-                        compute="fed-server-run",
+                        compute="job-cluster",
                         experiment_name=experiment_name,  # Pass the experiment name to your job
                     )
 
@@ -116,10 +116,3 @@ def submit_job(subject_num):
             logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
                 # Log exception to Azure ML
             mlflow.log_param("error_message", str(e))
-
-# Submit jobs in parallel
-with ProcessPoolExecutor() as executor:
-    executor.map(submit_job, range(args.total_subjects))
-
-# End Azure ML run
-run.complete()

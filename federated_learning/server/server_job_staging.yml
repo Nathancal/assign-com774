@@ -1,11 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 code: .
-command: python server.py --trainingdata ${{ inputs.training_data }} minimum_clients 3
-inputs:
-  training_data:
-    type: uri_file
-    path: azureml:subject2-4:2
+command: python start_server.py
 environment: azureml:development:15
-compute: azureml:fed-server-run
+compute: azureml:job-cluster
 experiment_name: Fed-Learning-Server-Experiment
 description: This job is for deploying and running the federated learning server in the dev environment....
