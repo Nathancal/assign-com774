@@ -60,7 +60,7 @@ jobs:
         key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
         port: 50000
         script: |
-          az login --identity --allow-no-subscriptions
+          az account show
           cd ~/cloudfiles/code/users/callaghan-n7/test_code/server
           ls
           python server.py --training_data subject2-4 --minimum_clients 3
