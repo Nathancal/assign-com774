@@ -30,8 +30,11 @@ jobs:
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       run: |
         echo $ACR_PASSWORD | docker login $ACR_NAME.azurecr.io -u $ACR_USERNAME --password-stdin
+        
     - name: Add ML Extension
       run: az extension add --name ml
+
+
     - name: Start Federated Learning Server
       run: az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
     
