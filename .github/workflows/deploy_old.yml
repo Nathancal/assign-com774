@@ -63,11 +63,11 @@ jobs:
             az login --identity --allow-no-subscriptions
             az extension add --name acr
             az extension add --name ml
-            docker login d208efad40c54644a94f9c0ee8d073c6.azurecr.io -u d208efad40c54644a94f9c0ee8d073c6 --password t6oAM7qPEpG/f0uTVE5bFSSzLJWcx/kBk0zzgjX7Mm+ACRB+6LI9
-            az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-            cd ~/cloudfiles/code/users/callaghan-n7/test_code/server 
+            # Change to the specified directory
+            cd ~/cloudfiles/code/users/callaghan-n7/test_code/server
+
+            # Run Python files
             python server.py --training_data subject2-4 minimum_clients 3
-            cd ..
             cd ~/cloudfiles/code/users/callaghan-n7/test_code/clients
             python run_client.py --total_subjects 4
     - name: Add ML Extension
