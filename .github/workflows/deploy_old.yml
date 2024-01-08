@@ -47,10 +47,10 @@ jobs:
 
     - name: List images in ACR
       run: az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
-    - name: Build and Push Docker Image
-      run: |
-          docker build -t ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build ./federated_learning/server
-          docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
+    # - name: Build and Push Docker Image
+    #   run: |
+    #       docker build -t ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build ./federated_learning/server
+    #       docker push d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
 
     - name: SSH into Azure ML Compute Instance
       uses: appleboy/ssh-action@master
@@ -62,12 +62,17 @@ jobs:
         script: |
             az login --identity --allow-no-subscriptions
             az extension add --name acr
-            docker pull d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
-            docker run -d -p 8080:80 -e TRAINING_DATA="subject2-4" -e MINIMUM_CLIENTS=3 your-image-name --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
-            docker container ls -a
+            az extension add --name ml
+            docker login d208efad40c54644a94f9c0ee8d073c6.azurecr.io -u d208efad40c54644a94f9c0ee8d073c6 --password t6oAM7qPEpG/f0uTVE5bFSSzLJWcx/kBk0zzgjX7Mm+ACRB+6LI9
+            az acr repository list --name d208efad40c54644a94f9c0ee8d073c6 --output table
+            cd ~/cloudfiles/code/users/callaghan-n7/test_code/server 
+            python server.py --training_data subject2-4 minimum_clients 3
+            cd ..
+            cd ~/cloudfiles/code/users/callaghan-n7/test_code/clients
+            python run_client.py --total_subjects 4
     - name: Add ML Extension
       run: az extension add --name ml
-    - name: Start Run Clients
-      run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+    # - name: Start Run Clients
+    #   run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
     - name: Test azure login by getting details
       run: az account show
