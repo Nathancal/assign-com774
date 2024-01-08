@@ -61,6 +61,7 @@ jobs:
         port: 50000
         script: |
             az login --identity --allow-no-subscriptions
+            docker login -u nathanc1994@icloud.com  -p ncallaghan17
             docker pull d208efad40c54644a94f9c0ee8d073c6.azurecr.io/com774:server-build
             docker run -d -p 8080:80 -e TRAINING_DATA="subject2-4" -e MINIMUM_CLIENTS=3 your-image-name --name Fed-Learning-server-container ${{ secrets.CONTAINER_REGISTRY_URL }}/com774:server-build
             docker container ls -a
