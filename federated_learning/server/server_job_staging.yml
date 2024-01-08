@@ -6,6 +6,6 @@ inputs:
     type: uri_file
     path: azureml:subject2-4:2
 environment: azureml:development:15
-compute: azureml:compute-resources
+compute: azureml:Fed-Server-Instance
 experiment_name: Fed-Learning-Server-Staging-Env
 description: This job is for deploying and running the federated learning server in the dev environment....
