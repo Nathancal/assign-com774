@@ -12,6 +12,7 @@ import threading
 import mlflow 
 from sklearn.model_selection import train_test_split
 import logging
+from azureml.core import Experiment
 from azureml.core.authentication import ServicePrincipalAuthentication
 import argparse
 from azure.ai.ml import MLClient
@@ -42,16 +43,18 @@ from azureml.core.model import  Model
 import random
 import string
 import uuid
-
+import os
 
 # Load Azure Machine Learning workspace from configuration file
 
 # Get the arguments we need to avoid fixing the dataset path in code
 parser = argparse.ArgumentParser()
-parser.add_argument("--trainingdata", type=str, required=True, help='Training data for model server')
-parser.add_argument("--minimumclients", type=int, required=True, help='Training data for model server')
-args = parser.parse_args()
 
+training_data = os.environ.get("TRAINING_DATA")
+minimum_clients = os.environ.get("MINIMUM_CLIENTS")
+
+# Convert minimum_clients to an integer
+minimum_clients = int(minimum_clients)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -86,7 +89,7 @@ mlflow.autolog()
 environment = Environment.get(workspace=ws, name="development")
 
 ml_client = MLClient.from_config(credential=DefaultAzureCredential())
-data_asset = ml_client.data._get_latest_version(args.trainingdata)
+data_asset = ml_client.data._get_latest_version(training_data)
 
 # Load and preprocess combined HAR data
 X, Y = utils.load_har_data(data_asset.path)
@@ -97,6 +100,13 @@ last_round_flag = threading.Event()
 num_rounds = 4
 model = utils.create_lstm_model()
 
+# Define experiment name
+experiment_name = "Fed-Learning-Server-Staging-Env"
+
+# Get an existing experiment or create a new one
+experiment = Experiment(workspace=ws, name=experiment_name)
+
+mlflow.set_experiment(experiment)
 def generate_8_digit_uuid():
     # Generate a UUID and take the last 8 characters
         
@@ -110,7 +120,7 @@ def fit_round(server_round: int) -> Dict:
     """Send round number to client"""
     return {"server_round": server_round}
 
-def get_evaluate_fn(model):
+def get_evaluate_fn(model, experiment):
 
     """Build an evaluation function for Flower to use to assess performance"""
     def evaluate(server_round: int, parameters:fl.server.history, config: Dict[str, fl.common.Scalar]):
@@ -164,11 +174,11 @@ def get_evaluate_fn(model):
     
     return evaluate
 
-def start_flower_server():
+def start_flower_server(experiment):
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=args.minimumclients,
-        evaluate_fn=get_evaluate_fn(model),
+        min_available_clients=minimum_clients,
+        evaluate_fn=get_evaluate_fn(model, experiment),
         on_fit_config_fn=fit_round,
     )
     
@@ -275,7 +285,7 @@ if __name__ == "__main__":
     utils.set_initial_lstm_params(model)
     # Set up a FedAvg strategy using the functions above expecting 2 clients
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=args.minimumclients,
+        min_available_clients=minimum_clients,
         evaluate_fn=get_evaluate_fn(model),
         on_fit_config_fn=fit_round,
     )
