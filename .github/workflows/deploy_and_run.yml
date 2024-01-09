@@ -54,7 +54,8 @@ jobs:
           key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
           port: 50000
           script: |
-            az login --identity
+            az login --identity --allow-no-subscriptions
+            az upgrade
             az account show
             /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/server/start_server.py
             /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/clients/run_client.py --total_subjects 4
