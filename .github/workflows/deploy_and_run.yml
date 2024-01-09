@@ -54,16 +54,5 @@ jobs:
           key: ${{ secrets.COMPUTE_INSTANCE_SSH_KEY }}
           port: 50000
           script: |
-              az login --identity --allow-no-subscriptions
-            #   az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
-
-    - name: add azure ML
-      run:            az extension add --name ml
-
-
-    - name: Start Run Server
-      run: az ml job create --file ${{github.workspace}}/federated_learning/server/server_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
-        
-
-    - name: Start Run Clients
-      run: az ml job create --file ${{github.workspace}}/federated_learning/clients/run_client_job_staging.yml  --resource-group assignment2-b00903995 --workspace-name  assignment2-ML-workspace
+            /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/server/start_server.py
+            /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/clients/run_client.py --total_subjects 4
