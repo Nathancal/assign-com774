@@ -4,4 +4,4 @@ command: python start_server.py
 environment: azureml:development:16
 compute: azureml:compute-isnt
 experiment_name: Fed-Learning-Server-Experiment
-description: This job is for deploying and running the federated learning server in the dev environment.
+description: This job is for deploying and running the federated learning server in the dev environment...

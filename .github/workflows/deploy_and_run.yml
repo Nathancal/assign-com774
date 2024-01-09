@@ -55,5 +55,7 @@ jobs:
           port: 50000
           script: |
             az login
+            az account set --subscription 092da66a-c312-4a87-8859-56031bb22656
+            az account show
             /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/server/start_server.py
             /anaconda/envs/azureml_py38/bin/python /home/azureuser/cloudfiles/code/Users/Callaghan-N7/test_code/clients/run_client.py --total_subjects 4
