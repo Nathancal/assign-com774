@@ -88,7 +88,7 @@ def start_server():
                         command="python server.py --training_data ${{inputs.input_data}} --minimum_clients 3",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
-                        compute="job-run-compute",
+                        compute="cluster-compute",
                         experiment_name=experiment_name,  # Pass the experiment name to your job
                     )
 
