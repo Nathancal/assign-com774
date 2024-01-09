@@ -78,14 +78,14 @@ def start_server():
                     logger.info(f"Experiment {experiment_name} already exists, job being added there for client {data_asset}")
 
                     inputs = {
-                        "input_data": Input(type=AssetTypes.URI_FILE, path=data_asset.path),
+
                         "experiment_name": experiment.name
                     }
 
                     # Define your job with the correct environment name and version
                     job = command(
                         code="./",  # local path where the code is stored
-                        command="python server.py --training_data ${{inputs.input_data}} --minimum_clients 3",
+                        command="python server.py --training_data subject2-4 --minimum_clients 3",
                         inputs=inputs,
                         environment=f"azureml:{environment_name}:{environment_version}",
                         compute="cluster-compute",
@@ -108,7 +108,7 @@ def start_server():
                 #logger.info(f"Job for subject {subject_num + 1} completed. Run ID: {run_id}")
 
         except Exception as e:
-            logger.error(f"Error submitting job for subject {subject_num + 1}: {str(e)}")
+            logger.error(f"Error submitting job for subject: {str(e)}")
                 # Log exception to Azure ML
             mlflow.log_param("error_message", str(e))
 
